@@ -2,5 +2,9 @@
   "name": "CVBeta3",
   "dockerFile": "Dockerfile",
   "context": "../..",
-  "postCreateCommand": "cd frontend && npm install"
+  "postCreateCommand": "cd frontend && npm install",
+  "build": {
+    "dockerfile": ".devcontainer/Dockerfile",
+    "context": ".."
+  }
 }
