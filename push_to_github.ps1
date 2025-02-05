@@ -29,6 +29,24 @@ git config --global core.autocrlf true
 git config --global core.safecrlf false
 git config --global credential.helper "store"
 
+# Validate PAT before operations
+try {
+    $testAuth = git ls-remote $repoUrl -q
+    if (-not $?) {
+        throw "Authentication failed"
+    }
+} catch {
+    Write-Error "Invalid PAT or repository access"
+    exit 1
+}
+
+# Test GitHub connection
+$response = Invoke-WebRequest -Uri "https://api.github.com" -Headers @{"Authorization" = "token $patText"}
+if ($response.StatusCode -ne 200) {
+    Write-Error "Invalid PAT or permissions"
+    exit 1
+}
+
 git add .
 git commit -m "Auto-commit: $(Get-Date -Format 'yyyyMMdd_HHmmss')"
 
