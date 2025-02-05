@@ -1,0 +1,6 @@
+flask==2.3.3
+google-generativeai==0.3.2
+weasyprint==58.0
+beautifulsoup4==4.12.2
+tenacity==8.2.3
+python-dotenv==1.0.0
