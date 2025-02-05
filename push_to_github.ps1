@@ -29,6 +29,12 @@ git config --global core.autocrlf true
 git config --global core.safecrlf false
 git config --global credential.helper "store"
 
+# Validate PAT format
+if (-not ($patText -match '^ghp_[a-zA-Z0-9]{36}$')) {
+    Write-Error "Invalid PAT format"
+    exit 1
+}
+
 # Validate PAT before operations
 try {
     $testAuth = git ls-remote $repoUrl -q
