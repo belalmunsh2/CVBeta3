@@ -1,5 +1,6 @@
 {
   "name": "CVBeta3",
   "dockerFile": "Dockerfile",
+  "context": "../..",
   "postCreateCommand": "pip install -r backend/requirements.txt && cd frontend && npm install"
 }
