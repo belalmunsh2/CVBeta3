@@ -28,7 +28,13 @@ if (-not (git remote show origin)) {
     git remote set-url origin $authUrl
 }
 
+if (-not (git rev-parse --verify master)) {
+    git checkout -b master
+}
+
+git config --global core.autocrlf true
+
 git add .
 git commit -m "Auto-commit: $(Get-Date -Format 'yyyyMMdd_HHmmss')"
 
-git push -u origin main --force
+git push -u origin master --force
