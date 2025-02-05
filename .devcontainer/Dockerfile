@@ -13,5 +13,5 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /workspace
 
 # Pre-install Python dependencies (layer caching)
-COPY backend/requirements.txt .
+COPY ../backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
