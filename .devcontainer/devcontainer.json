@@ -4,7 +4,6 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "postCreateCommand": "cd frontend && npm install",
   "forwardPorts": [3000, 5000],
   "customizations": {
     "vscode": {
