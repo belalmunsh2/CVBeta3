@@ -10,22 +10,15 @@ if (-not (Test-Path .git)) {
 }
 
 # Secure PAT handling
-if (-not (Test-Path $configPath)) {
-    $pat = Read-Host "Enter GitHub PAT" -AsSecureString
-    $patText = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pat))
-    $patText | ConvertTo-SecureString -AsPlainText -Force | ConvertFrom-SecureString | Set-Content $configPath
-}
+$pat = Read-Host "Enter GitHub PAT" -AsSecureString
+$patText = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pat))
 
-$securePat = Get-Content $configPath | ConvertTo-SecureString
-$credential = New-Object System.Management.Automation.PSCredential("PAT", $securePat)
-$patText = $credential.GetNetworkCredential().Password
-
-$authUrl = $repoUrl.Replace("https://", "https://${patText}@")
+$repoUrl = "https://${patText}@github.com/belalmunsh/CVBeta3"
 
 if (-not (git remote show origin)) {
-    git remote add origin $authUrl
+    git remote add origin $repoUrl
 } else {
-    git remote set-url origin $authUrl
+    git remote set-url origin $repoUrl
 }
 
 if (-not (git rev-parse --verify master)) {
@@ -39,4 +32,4 @@ git config --global credential.helper "store"
 git add .
 git commit -m "Auto-commit: $(Get-Date -Format 'yyyyMMdd_HHmmss')"
 
-git push -u origin master --force
+git push $repoUrl master --force
