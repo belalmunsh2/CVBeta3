@@ -33,6 +33,8 @@ if (-not (git rev-parse --verify master)) {
 }
 
 git config --global core.autocrlf true
+git config --global core.safecrlf false
+git config --global credential.helper "store"
 
 git add .
 git commit -m "Auto-commit: $(Get-Date -Format 'yyyyMMdd_HHmmss')"
