@@ -1,6 +1,6 @@
 # Basic push script from CVBeta2
 $repoPath = "C:\Users\ASUS\CascadeProjects\CVBeta3"
-$configPath = "$env:USERPROFILE\.cvbeta3_gitconfig"
+$configPath = "$env:USERPROFILE\.cvbeta3_token"
 $repoUrl = "https://github.com/belalmunsh/CVBeta3"
 
 Set-Location $repoPath
@@ -10,8 +10,21 @@ if (-not (Test-Path .git)) {
 }
 
 # Secure PAT handling
-$pat = Read-Host "Enter GitHub PAT" -AsSecureString
-$patText = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($pat))
+if (Test-Path $configPath) {
+    $useExisting = Read-Host "Use existing PAT? (Y/n)"
+    if ($useExisting -eq 'n') {
+        Remove-Item $configPath
+    }
+}
+
+if (-not (Test-Path $configPath)) {
+    $pat = Read-Host "Enter GitHub PAT" -AsSecureString
+    ConvertFrom-SecureString $pat | Set-Content $configPath
+}
+
+$securePat = Get-Content $configPath | ConvertTo-SecureString
+$patCred = New-Object System.Management.Automation.PSCredential("user", $securePat)
+$patText = $patCred.GetNetworkCredential().Password
 
 $repoUrl = "https://${patText}@github.com/belalmunsh/CVBeta3"
 
