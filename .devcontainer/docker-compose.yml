@@ -7,7 +7,7 @@ services:
       - ../backend/app:/app
     ports:
       - "8000:8000"
-    environment:
+    env_file:
       - .env
     command: uvicorn app.main:app --reload --host 0.0.0.0
   frontend:
