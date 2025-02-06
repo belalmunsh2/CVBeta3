@@ -4,7 +4,9 @@ services:
     image: python:3.11-slim-buster
     working_dir: /app
     volumes:
-      - ../backend/app:/app
+      - type: bind
+        source: ../backend/app
+        target: /app
     ports:
       - "8000:8000"
     command: uvicorn app.main:app --reload --host 0.0.0.0
@@ -12,7 +14,9 @@ services:
     image: node:18-slim
     working_dir: /app
     volumes:
-      - ../frontend:/app
+      - type: bind
+        source: ../frontend
+        target: /app
     ports:
       - "5173:5173"
     environment:
