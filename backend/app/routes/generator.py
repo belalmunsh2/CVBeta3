@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.models.schemas import CVTextInput
-from .services.gemini_ai_service import generate_cv_content_gemini
+from ..services.gemini_ai_service import generate_cv_content_gemini
 
 router = APIRouter()
 
