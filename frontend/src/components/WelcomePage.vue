@@ -17,15 +17,23 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { generateCV } from '../services/api'; 
+import { generateCV } from '../services/api';
 
 const userText = ref('');
 const generatedCvContent = ref('');
 
 const generateCvClicked = async () => {
-  generatedCvContent.value = ''; 
-  const response = await generateCV(userText.value);
-  generatedCvContent.value = response;
+  console.log("Generate CV button clicked!"); // Log: Function start
+  console.log("userText value:", userText.value); // Log: userText value before API call
+  generatedCvContent.value = '';
+  try {
+    const response = await generateCV(userText.value);
+    console.log("API response received:", response); // Log: API response
+    generatedCvContent.value = response;
+  } catch (error) {
+    console.error("Error in generateCvClicked:", error); // Log: Error in function
+  }
+  console.log("generatedCvContent value after API call:", generatedCvContent.value); // Log: generatedCvContent value after API call
 };
 </script>
 
