@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.app.services.stub_ai import generate_cv_content_stub
+from app.services.stub_ai import generate_cv_content_stub
 
 router = APIRouter()
 
