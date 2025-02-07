@@ -1,9 +1,10 @@
 <template>
-  <WelcomePage />
+  <div>
+    <h2>Test Home View</h2>
+  </div>
 </template>
 
 <script setup>
-import WelcomePage from '../components/WelcomePage.vue';
 </script>
 
 <style scoped>

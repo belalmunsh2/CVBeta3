@@ -1,9 +1,10 @@
 <template>
-  <router-view />
+  <div>
+    <h1>Test App</h1>
+  </div>
 </template>
 
 <script setup>
-// No script logic needed in App.vue for now
 </script>
 
 <style scoped>
