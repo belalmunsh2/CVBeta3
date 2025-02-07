@@ -1,9 +1,11 @@
 <template>
-  <h1>CV Builder</h1>
+  <router-view />
 </template>
 
-<script>
-export default {
-  name: 'App',
-}
+<script setup>
+// No script logic needed in App.vue for now
 </script>
+
+<style scoped>
+/* You can add global styles here if needed, but not essential for now */
+</style>
