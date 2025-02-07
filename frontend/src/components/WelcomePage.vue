@@ -3,7 +3,7 @@
     <div class="hero-section">
       <h1>Welcome to CV Builder!</h1>
       <p>Create your professional CV easily with our AI-powered CV Builder. Get started below!</p>
-      <button class="get-started-button">Get Started</button>
+      <router-link to="/service" class="get-started-button">Get Started</router-link>
     </div>
   </div>
 </template>
