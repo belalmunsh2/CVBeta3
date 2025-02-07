@@ -2,11 +2,12 @@
   <div class="service-page">
     <h1>CV Creator Service Page</h1>
     <p>This is the CV Creator Service Page. Input your CV text below.</p>
+    <CvForm />
   </div>
 </template>
 
 <script setup>
-// No script logic needed for now
+import CvForm from '../components/CvForm.vue';
 </script>
 
 <style scoped>
