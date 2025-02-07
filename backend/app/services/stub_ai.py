@@ -1,4 +1,4 @@
-from backend.app.services.ai_prompts import CV_SYSTEM_PROMPT
+from .ai_prompts import CV_SYSTEM_PROMPT
 
 def generate_cv_content_stub(user_text: str) -> str:
     """
