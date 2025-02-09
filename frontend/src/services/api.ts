@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000'; // Define base URL for your backend
+const API_BASE_URL = `https://${process.env.CODESPACE_NAME}-8000.app.github.dev`; //  API base URL using Codespaces hostname
 
 export const generateCV = async (userText: string): Promise<string> => {
   try {
