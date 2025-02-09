@@ -8,9 +8,9 @@
     <textarea v-model="userText" placeholder="Enter your experience and skills here..." rows="10" cols="80"></textarea><br>
     <button @click="generateCvClicked">Generate CV</button>
 
-    <div v-if="generatedCvContent">
+    <div v-if="generatedCvContent" class="cv-output">
       <h2>Generated CV Content:</h2>
-      <pre style="white-space: pre-wrap;">{{ generatedCvContent }}</pre>
+      <pre>{{ generatedCvContent }}</pre>
     </div>
   </div>
 </template>
