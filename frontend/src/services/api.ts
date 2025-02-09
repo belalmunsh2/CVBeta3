@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = `http://${process.env.CODESPACE_NAME}-8000.app.github.dev`; //  API base URL using Codespaces hostname (now http://)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Access Vite-exposed env variable
 
 export const generateCV = async (userText: string): Promise<string> => {
   try {
