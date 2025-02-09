@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Access Vite-exposed env variable
+const API_BASE_URL = `https://${import.meta.env.VITE_API_BASE_URL.substring(7)}`; // Revert to https:// and remove http:// prefix if present
 
 export const generateCV = async (userText: string): Promise<string> => {
   try {
