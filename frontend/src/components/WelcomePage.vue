@@ -29,6 +29,7 @@ const generateCvClicked = async () => {
   try {
     const response = await generateCV(userText.value);
     console.log("API response received:", response); // Log: API response
+    console.log("response.data:", response.data);
     generatedCvContent.value = response;
   } catch (error) {
     console.error("Error in generateCvClicked:", error); // Log: Error in function
