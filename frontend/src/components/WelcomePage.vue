@@ -15,6 +15,7 @@ This is a test line 1.
 This is line 2.
   This line is indented.
 </pre>
+      <p style="color: red; font-weight: bold;">[DEBUG: generatedCvContent value: {{ generatedCvContent }} ]</p>
     </div>
   </div>
 </template>
