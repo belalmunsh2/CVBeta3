@@ -23,18 +23,28 @@ const userText = ref('');
 const generatedCvContent = ref('');
 
 const generateCvClicked = async () => {
-  console.log("Generate CV button clicked!"); // Log: Function start
-  console.log("userText value:", userText.value); // Log: userText value before API call
-  generatedCvContent.value = '';
+  console.log("Generate CV button clicked!");
+  console.log("userText value:", userText.value);
+
   try {
     const response = await generateCV(userText.value);
-    console.log("API response received:", response); // Log: API response
-    console.log("response.data:", response.data);
-    generatedCvContent.value = response;
+    console.log("API response received:", response);
+
+    // --- PDF Download Logic ---
+    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'generated_cv.pdf'; // Suggest a filename
+    document.body.appendChild(link); // Append to body (required for Firefox)
+    link.click(); // Programmatically click to trigger download
+    document.body.removeChild(link); // Clean up: remove link from body
+    URL.revokeObjectURL(url); // Clean up: release object URL
+
   } catch (error) {
-    console.error("Error in generateCvClicked:", error); // Log: Error in function
+    console.error("Error in generateCvClicked:", error);
   }
-  console.log("generatedCvContent value after API call:", generatedCvContent.value); // Log: generatedCvContent value after API call
+  console.log("generatedCvContent value after API call (now irrelevant for PDF download):", generatedCvContent.value);
 };
 </script>
 
