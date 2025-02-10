@@ -54,57 +54,23 @@ async def generate_cv(cv_text_input: CVTextInput) -> Response:
     print("Backend: /generate-cv/ - AI generated content:")
     print(ai_cv_content)
 
-    # Parse the CV content into sections
-    sections = parse_cv_content(ai_cv_content)
-    
-    # Generate structured HTML
-    html_content = f"""
+    # --- SIMPLIFIED HTML GENERATION ---
+    html_content = """
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Generated CV</title>
+        <title>Simplified CV Test</title>
     </head>
     <body>
         <div class="cv-container">
-            <div class="header">
-                <h1>{sections.get('Personal Information', [''])[0]}</h1>
-                <p>{sections.get('Contact', [''])[0]}</p>
-            </div>
-
             <div class="section summary">
                 <h2>Summary</h2>
-                <p>{''.join(sections.get('Summary', []))}</p>
-            </div>
-
-            <div class="section experience">
-                <h2>Experience</h2>
-                {''.join(f"<div class='experience-item'><p>{item}</p></div>" 
-                        for item in sections.get('Experience', []))}
-            </div>
-
-            <div class="section education">
-                <h2>Education</h2>
-                {''.join(f"<div class='education-item'><p>{item}</p></div>" 
-                        for item in sections.get('Education', []))}
-            </div>
-
-            <div class="section skills">
-                <h2>Skills</h2>
-                <ul>
-                    {''.join(f"<li>{item}</li>" for item in sections.get('Skills', []))}
-                </ul>
-            </div>
-
-            <div class="section projects">
-                <h2>Projects</h2>
-                {''.join(f"<div class='project-item'><p>{item}</p></div>" 
-                        for item in sections.get('Projects', []))}
+                <p>This is a test summary.</p>
             </div>
         </div>
     </body>
     </html>
     """
-
     print(f"Backend: /generate-cv/ - HTML Content for PDF Generation:\n{html_content}")
 
     print("Backend: /generate-cv/ - Starting PDF generation process...")
@@ -115,7 +81,7 @@ async def generate_cv(cv_text_input: CVTextInput) -> Response:
         print("Backend: /generate-cv/ - PDF generation successful.")
 
         # Return PDF file as a response
-        return Response(content=pdf_bytes, media_type="application/pdf", 
+        return Response(content=pdf_bytes, media_type="application/pdf",
                       headers={"Content-Disposition": "attachment; filename=generated_cv.pdf"})
 
     except Exception as e:
@@ -132,5 +98,5 @@ async def generate_test_pdf() -> Response:
     print("Backend: /generate_test_pdf - Starting test PDF generation...")
     pdf_bytes = generate_pdf_from_html(html_content)
     print("Backend: /generate_test_pdf - Test PDF generation successful.")
-    return Response(content=pdf_bytes, media_type="application/pdf", 
+    return Response(content=pdf_bytes, media_type="application/pdf",
                    headers={"Content-Disposition": "attachment; filename=test_pdf.pdf"})
