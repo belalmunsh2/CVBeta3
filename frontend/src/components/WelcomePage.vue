@@ -10,12 +10,7 @@
 
     <div v-if="generatedCvContent" class="cv-output">
       <h2>Generated CV Content:</h2>
-      <pre>
-This is a test line 1.
-This is line 2.
-  This line is indented.
-</pre>
-      <p style="color: red; font-weight: bold;">[DEBUG: generatedCvContent value: {{ generatedCvContent }} ]</p>
+      <pre>{{ generatedCvContent }}</pre>
     </div>
   </div>
 </template>
