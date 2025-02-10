@@ -32,7 +32,7 @@ const generateCvClicked = async () => {
     console.log("API response received:", response);
 
     // --- PDF Download Logic ---
-    const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+    const pdfBlob = new Blob([response], { type: 'application/pdf' });
     const url = URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
     link.href = url;
