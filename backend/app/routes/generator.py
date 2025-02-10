@@ -16,6 +16,8 @@ async def generate_cv(cv_text_input: CVTextInput) -> Response:
     """
     user_text = cv_text_input.user_text
     ai_cv_content = generate_cv_content_gemini(user_text)
+    print("Backend: /generate-cv/ - AI generated content:")  # Add this logging line
+    print(ai_cv_content) # Log the actual AI content - VERY IMPORTANT
 
     # Convert CV content to basic HTML (using <pre> for now)
     html_content = f"<pre>{ai_cv_content}</pre>"  # Access data using dictionary key
