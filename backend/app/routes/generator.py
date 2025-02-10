@@ -10,13 +10,21 @@ async def health_check():
     return {"status": "OK"}
 
 @router.post("/generate-cv/")
-async def generate_cv(cv_text_input: CVTextInput) -> str:
+async def generate_cv(cv_text_input: CVTextInput) -> Response:
     """
-    Endpoint to generate CV content using Gemini AI API.
+    Generates a CV in PDF format based on user input.
     """
     user_text = cv_text_input.user_text
     ai_cv_content = generate_cv_content_gemini(user_text)
-    return ai_cv_content
+
+    # Convert CV content to basic HTML (using <pre> for now)
+    html_content = f"<pre>{ai_cv_content}</pre>"  # Access data using dictionary key
+
+    # Generate PDF from HTML
+    pdf_bytes = generate_pdf_from_html(html_content)
+
+    # Return PDF file as a response
+    return Response(content=pdf_bytes, media_type="application/pdf", headers={"Content-Disposition": "attachment; filename=generated_cv.pdf"})
 
 @router.get("/generate_test_pdf")
 async def generate_test_pdf() -> Response:
