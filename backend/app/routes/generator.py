@@ -21,6 +21,7 @@ async def generate_cv(cv_text_input: CVTextInput) -> Response:
 
     # Convert CV content to basic HTML (using <pre> for now)
     html_content = f"<pre>{ai_cv_content}</pre>"  # Access data using dictionary key
+    print(f"Backend: /generate-cv/ - HTML Content for PDF Generation:\n{html_content}")
 
     print("Backend: /generate-cv/ - Starting PDF generation process...")  # Log start of PDF generation
 
