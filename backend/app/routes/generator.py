@@ -40,22 +40,9 @@ def parse_cv_content(content: str) -> dict:
         
     return sections
 
-@router.get("/health")
-async def health_check():
-    return {"status": "OK"}
-
-@router.post("/generate-cv/")
-async def generate_cv(cv_text_input: CVTextInput) -> Response:
-    """
-    Generates a CV in PDF format based on user input.
-    """
-    user_text = cv_text_input.user_text
-    ai_cv_content = generate_cv_content_gemini(user_text)
-    print("Backend: /generate-cv/ - AI generated content:")
-    print(ai_cv_content)
-
-    # --- SIMPLIFIED HTML GENERATION ---
-    html_content = """
+def generate_html_from_ai_content(sections: dict) -> str:
+    """Generates HTML string from parsed CV sections."""
+    html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -71,6 +58,24 @@ async def generate_cv(cv_text_input: CVTextInput) -> Response:
     </body>
     </html>
     """
+    return html_content
+
+@router.get("/health")
+async def health_check():
+    return {"status": "OK"}
+
+@router.post("/generate-cv/")
+async def generate_cv(cv_text_input: CVTextInput) -> Response:
+    """
+    Generates a CV in PDF format based on user input.
+    """
+    user_text = cv_text_input.user_text
+    ai_cv_content = generate_cv_content_gemini(user_text)
+    print("Backend: /generate-cv/ - AI generated content:")
+    print(ai_cv_content)
+
+    sections = parse_cv_content(ai_cv_content)
+    html_content = generate_html_from_ai_content(sections)
     print(f"Backend: /generate-cv/ - HTML Content for PDF Generation:\n{html_content}")
 
     print("Backend: /generate-cv/ - Starting PDF generation process...")
