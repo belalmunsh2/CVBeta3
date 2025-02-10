@@ -28,7 +28,7 @@ const generateCvClicked = async () => {
 
   try {
     const response = await generateCV(userText.value);
-    console.log("response.data (before Blob):", response.data);
+    console.log("Full response object (before Blob):", response);
     console.log("API response received:", response);
 
     // --- PDF Download Logic ---
