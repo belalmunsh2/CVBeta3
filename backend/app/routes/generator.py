@@ -2,7 +2,6 @@ from fastapi import APIRouter, Response
 from fastapi.responses import PlainTextResponse
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
-from ..services.pdf import generate_pdf_from_html
 
 router = APIRouter()
 
@@ -68,43 +67,10 @@ async def health_check():
 @router.post("/generate-cv/")
 async def generate_cv(cv_text_input: CVTextInput) -> PlainTextResponse:
     """
-    Generates a CV in PDF format based on user input.
+    Generates CV content in plain text (temporarily for debugging - NO WEASYPRINT).
     """
     user_text = cv_text_input.user_text
     ai_cv_content = generate_cv_content_gemini(user_text)
-    print("Backend: /generate-cv/ - AI generated content:")
+    print("Backend: /generate-cv/ - AI generated content (plain text, no PDF):")
     print(ai_cv_content)
-
-    # sections = parse_cv_content(ai_cv_content)
-    # html_content = generate_html_from_ai_content(sections)
-    # print(f"Backend: /generate-cv/ - HTML Content for PDF Generation:\n{html_content}")
-
-    # print("Backend: /generate-cv/ - Starting PDF generation process...")
-
-    # try:
-    #     # Generate PDF from HTML
-    #     pdf_bytes = generate_pdf_from_html(html_content)
-    #     print("Backend: /generate-cv/ - PDF generation successful.")
-
-    #     # Return PDF file as a response
-    #     return Response(content=pdf_bytes, media_type="application/pdf",
-    #                   headers={"Content-Disposition": "attachment; filename=generated_cv.pdf"})
-
-    # except Exception as e:
-    #     print(f"Backend: /generate-cv/ - ERROR during PDF generation: {e}")
-    #     return Response(content="Error generating PDF", status_code=500, media_type="text/plain")
-
     return PlainTextResponse(content=ai_cv_content)
-
-
-@router.get("/generate_test_pdf")
-async def generate_test_pdf() -> Response:
-    """
-    Generates a simple test PDF using WeasyPrint and returns it as a downloadable file.
-    """
-    html_content = "<h1>Hello from WeasyPrint!</h1><p>This is a test PDF.</p>"
-    print("Backend: /generate_test_pdf - Starting test PDF generation...")
-    pdf_bytes = generate_pdf_from_html(html_content)
-    print("Backend: /generate_test_pdf - Test PDF generation successful.")
-    return Response(content=pdf_bytes, media_type="application/pdf",
-                   headers={"Content-Disposition": "attachment; filename=test_pdf.pdf"})
