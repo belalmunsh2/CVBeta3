@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000'; // Define base URL for your backend
+const API_BASE_URL = 'https://symmetrical-orbit-9xxvqjqqvvj3xv9g-8000.app.github.dev'; // Correct Backend URL for Codespaces
 
 export const generateCV = async (userText: string): Promise<string> => {
   try {
