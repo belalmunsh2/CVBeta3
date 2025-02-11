@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Response
+from fastapi.responses import PlainTextResponse
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf import generate_pdf_from_html
@@ -65,7 +66,7 @@ async def health_check():
     return {"status": "OK"}
 
 @router.post("/generate-cv/")
-async def generate_cv(cv_text_input: CVTextInput) -> Response:
+async def generate_cv(cv_text_input: CVTextInput) -> PlainTextResponse:
     """
     Generates a CV in PDF format based on user input.
     """
@@ -74,24 +75,26 @@ async def generate_cv(cv_text_input: CVTextInput) -> Response:
     print("Backend: /generate-cv/ - AI generated content:")
     print(ai_cv_content)
 
-    sections = parse_cv_content(ai_cv_content)
-    html_content = generate_html_from_ai_content(sections)
-    print(f"Backend: /generate-cv/ - HTML Content for PDF Generation:\n{html_content}")
+    # sections = parse_cv_content(ai_cv_content)
+    # html_content = generate_html_from_ai_content(sections)
+    # print(f"Backend: /generate-cv/ - HTML Content for PDF Generation:\n{html_content}")
 
-    print("Backend: /generate-cv/ - Starting PDF generation process...")
+    # print("Backend: /generate-cv/ - Starting PDF generation process...")
 
-    try:
-        # Generate PDF from HTML
-        pdf_bytes = generate_pdf_from_html(html_content)
-        print("Backend: /generate-cv/ - PDF generation successful.")
+    # try:
+    #     # Generate PDF from HTML
+    #     pdf_bytes = generate_pdf_from_html(html_content)
+    #     print("Backend: /generate-cv/ - PDF generation successful.")
 
-        # Return PDF file as a response
-        return Response(content=pdf_bytes, media_type="application/pdf",
-                      headers={"Content-Disposition": "attachment; filename=generated_cv.pdf"})
+    #     # Return PDF file as a response
+    #     return Response(content=pdf_bytes, media_type="application/pdf",
+    #                   headers={"Content-Disposition": "attachment; filename=generated_cv.pdf"})
 
-    except Exception as e:
-        print(f"Backend: /generate-cv/ - ERROR during PDF generation: {e}")
-        return Response(content="Error generating PDF", status_code=500, media_type="text/plain")
+    # except Exception as e:
+    #     print(f"Backend: /generate-cv/ - ERROR during PDF generation: {e}")
+    #     return Response(content="Error generating PDF", status_code=500, media_type="text/plain")
+
+    return PlainTextResponse(content=ai_cv_content)
 
 
 @router.get("/generate_test_pdf")

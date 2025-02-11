@@ -31,16 +31,18 @@ const generateCvClicked = async () => {
     console.log("Full response object (before Blob):", response);
     console.log("API response received:", response);
 
-    // --- PDF Download Logic ---
-    const pdfBlob = new Blob([response], { type: 'application/pdf' });
-    const url = URL.createObjectURL(pdfBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'generated_cv.pdf'; // Suggest a filename
-    document.body.appendChild(link); // Append to body (required for Firefox)
-    link.click(); // Programmatically click to trigger download
-    document.body.removeChild(link); // Clean up: remove link from body
-    URL.revokeObjectURL(url); // Clean up: release object URL
+    // --- PDF Download Logic --- (TEMPORARILY DISABLED - COMMENTED OUT)
+    // const pdfBlob = new Blob([response], { type: 'application/pdf' });
+    // const url = URL.createObjectURL(pdfBlob);
+    // const link = document.createElement('a');
+    // link.href = url;
+    // link.download = 'generated_cv.pdf';
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+    // URL.revokeObjectURL(url);
+
+    generatedCvContent.value = response;
 
   } catch (error) {
     console.error("Error in generateCvClicked:", error);
