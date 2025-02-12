@@ -7,6 +7,7 @@
     </div>
     <textarea v-model="userText" placeholder="Enter your experience and skills here..." rows="10" cols="80"></textarea><br>
     <button @click="generateCvClicked">Generate CV</button>
+    <button @click="handleDownloadPdfClick">Download PDF CV</button>
 
     <div v-if="generatedCvContent" class="cv-output">
       <h2>Generated CV Content:</h2>
@@ -17,7 +18,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { generateCV } from '../services/api';
+import { generateCV, downloadCvPdf } from '../services/api';
 
 const userText = ref('');
 const generatedCvContent = ref('');
@@ -48,6 +49,22 @@ const generateCvClicked = async () => {
     console.error("Error in generateCvClicked:", error);
   }
   console.log("generatedCvContent value after API call (now irrelevant for PDF download):", generatedCvContent.value);
+};
+
+const handleDownloadPdfClick = async () => {
+  try {
+    const pdfBlob = await downloadCvPdf({ user_text: userText.value });
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = pdfUrl;
+    downloadLink.download = 'cv.pdf';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(pdfUrl);
+  } catch (error) {
+    console.error("Error downloading PDF:", error);
+  }
 };
 </script>
 
