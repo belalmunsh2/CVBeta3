@@ -33,4 +33,4 @@ def convert_html_to_pdf(html_string: str) -> bytes:
         bytes: The PDF file content as bytes.
     """
     pdf_bytes = weasyprint.HTML(string=html_string).write_pdf()
-    return pdf_bytes 
+    return pdf_bytes
