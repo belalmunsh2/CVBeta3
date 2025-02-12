@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Response
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, StreamingResponse
+from io import BytesIO
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
+from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
 
 router = APIRouter()
 
@@ -74,3 +76,22 @@ async def generate_cv(cv_text_input: CVTextInput) -> PlainTextResponse:
     print("Backend: /generate-cv/ - AI generated content (plain text, no PDF):")
     print(ai_cv_content)
     return PlainTextResponse(content=ai_cv_content)
+
+@router.post("/download-cv-pdf/")
+async def download_cv_pdf(cv_text_input: CVTextInput):
+    """
+    Generates CV content using Gemini AI and returns it as a downloadable PDF file.
+    """
+    user_text = cv_text_input.user_text
+    ai_cv_content = generate_cv_content_gemini(user_text)
+    html_content = generate_cv_html(ai_cv_content)
+    pdf_bytes = convert_html_to_pdf(html_content)
+
+    def iter_pdf_content():
+        yield pdf_bytes
+
+    headers = {
+        'Content-Disposition': 'attachment; filename="cv.pdf"',
+        'Content-Type': 'application/pdf'
+    }
+    return StreamingResponse(iter_pdf_content(), media_type="application/pdf", headers=headers)
