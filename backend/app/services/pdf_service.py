@@ -3,12 +3,7 @@ import weasyprint
 def generate_cv_html(cv_text: str) -> str:
     """
     Converts an HTML string to a PDF file in bytes format using WeasyPrint.
-
-    Args:
-        cv_text: A string containing the HTML content to convert.
-
-    Returns:
-        bytes: The PDF file content as bytes.
+    (Minimal CSS indentation inside <style> - Hypothesis for fix)
     """
     html_content = f"""
     <!DOCTYPE html>
@@ -16,7 +11,7 @@ def generate_cv_html(cv_text: str) -> str:
     <head>
         <title>Generated CV</title>
         <style>
-            body { font-family: Arial, sans-serif; } /* Correct CSS syntax with curly braces */
+body {{ font-family: Arial, sans-serif; }} /* Minimal indentation inside <style> */
         </style>
     </head>
     <body>
