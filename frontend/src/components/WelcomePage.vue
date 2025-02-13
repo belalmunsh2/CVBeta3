@@ -1,5 +1,10 @@
 <template>
   <div class="welcome-page">
+    <div class="hero-section">
+      <h1>Welcome to CV Builder!</h1>
+      <p>Create your professional CV easily with our AI-powered CV Builder. Get started below!</p>
+      <router-link to="/service" class="get-started-button">Get Started</router-link>
+    </div>
     <textarea v-model="userText" placeholder="Enter your experience and skills here..." rows="10" cols="80"></textarea><br>
     <button @click="generateCvClicked">Generate CV</button>
     <button @click="handleDownloadPdfClick">Download PDF CV</button>
