@@ -1,7 +1,7 @@
 <template>
   <div class="service-page">
     <h1>CV Creator Service Page</h1>
-    <CvForm />
+    
     <textarea v-model="userText" placeholder="Enter your experience and skills here..." rows="10" cols="80"></textarea><br>
     <button @click="generateCvClicked">Generate CV</button>
     <button @click="handleDownloadPdfClick">Download PDF CV</button>
@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-import CvForm from '../components/CvForm.vue';
 import { ref } from 'vue';
 import { generateCV, downloadCvPdf } from '../services/api';
 
