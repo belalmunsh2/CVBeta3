@@ -59,41 +59,43 @@ const handleDownloadPdfClick = async () => {
 
 <style scoped>
 .welcome-page {
-  text-align: center; 
-  padding: 20px; 
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
 }
 
-.hero-section { 
-  background-color: #f0f0f0; 
-  padding: 40px 20px;
+.hero-section {
+  text-align: center;
+  padding: 20px;
+  background-color: #fff;
   border-radius: 8px;
-  margin-bottom: 20px; 
-  text-align: center; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-  margin-bottom: 15px;
+.hero-section h1 {
   color: #333;
 }
 
-p {
-  color: #555;
-  margin-bottom: 20px; 
-  font-size: 1.1rem;
+.hero-section p {
+  color: #666;
+  margin-bottom: 20px;
 }
 
-.get-started-button { 
-  background-color: #007bff; 
+.get-started-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #007bff;
   color: white;
-  padding: 12px 24px;
-  border: none;
+  text-decoration: none;
   border-radius: 5px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease; 
+  transition: background-color 0.3s ease;
 }
 
 .get-started-button:hover {
-  background-color: #0056b3; 
+  background-color: #0056b3;
 }
 </style>
