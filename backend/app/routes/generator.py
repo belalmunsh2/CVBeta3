@@ -95,3 +95,42 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
         'Content-Type': 'application/pdf'
     }
     return StreamingResponse(iter_pdf_content(), media_type="application/pdf", headers=headers)
+
+@router.post("/create-payment-session")
+async def create_payment_session(cv_text_input: CVTextInput):
+    paytabs_api_endpoint_url = "https://test-egypt.paytabs.com/payment/request"  # Replace with actual PayTabs TEST API endpoint
+    headers = {
+        "Authorization": "Bearer S6J9R6HRK9-JK9KH6KBTW-T6GTKRRLBH",  # Replace with your actual Test API Key
+        "Content-Type": "application/json"
+    }
+    request_body_data = {
+        "profile_id": "144516",  # Replace with your actual Profile ID
+        "tran_type": "sale",
+        "tran_class": "ecom",
+        "cart_id": "CV-PDF-ORDER-123",  # Placeholder - will be made dynamic later
+        "cart_description": "CV PDF Download",
+        "cart_currency": "USD",
+        "cart_amount": "1.00",
+        "callback_url": "http://localhost:5173/payment-success",  # Replace with your actual frontend payment success route URL
+        "return_url": "http://localhost:5173/payment-cancel"  # Replace with your actual frontend payment cancel route URL
+    }
+
+    try:
+        import requests
+        response = requests.post(paytabs_api_endpoint_url, headers=headers, json=request_body_data)
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        response_json = response.json()
+        payment_url = response_json.get("redirect_url")  # Replace "payment_url" with the actual field name in PayTabs response
+
+        if payment_url:
+            return {"payment_url": payment_url}
+        else:
+            print("Payment URL not found in PayTabs response")
+            return {"error": "Failed to retrieve payment URL from PayTabs"}
+
+    except requests.exceptions.RequestException as e:
+        print(f"Network error during PayTabs API call: {e}")
+        return {"error": "Failed to connect to PayTabs"}
+    except Exception as e:
+        print(f"Error creating payment session with PayTabs: {e}")
+        return {"error": "Failed to create payment session with PayTabs"}
