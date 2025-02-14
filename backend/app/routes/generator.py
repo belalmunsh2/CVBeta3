@@ -4,6 +4,8 @@ from io import BytesIO
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
+import requests
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
@@ -98,39 +100,38 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
 
 @router.post("/create-payment-session")
 async def create_payment_session(cv_text_input: CVTextInput):
-    paytabs_api_endpoint_url = "https://test-egypt.paytabs.com/payment/request"  # Replace with actual PayTabs TEST API endpoint
+    paytabs_api_endpoint_url = "https://secure-egypt.paytabs.com/payment/request"
     headers = {
-        "Authorization": "Bearer S6J9R6HRK9-JK9KH6KBTW-T6GTKRRLBH",  # Replace with your actual Test API Key
+        "Authorization": "Bearer S6J9R6HRK9-JK9KH6KBTW-T6GTKRRLBH",
         "Content-Type": "application/json"
     }
     request_body_data = {
-        "profile_id": "144516",  # Replace with your actual Profile ID
+        "profile_id": "144516",
         "tran_type": "sale",
         "tran_class": "ecom",
-        "cart_id": "CV-PDF-ORDER-123",  # Placeholder - will be made dynamic later
+        "cart_id": "CV-PDF-ORDER-123",
         "cart_description": "CV PDF Download",
         "cart_currency": "USD",
         "cart_amount": "1.00",
-        "callback_url": "http://localhost:5173/payment-success",  # Replace with your actual frontend payment success route URL
-        "return_url": "http://localhost:5173/payment-cancel"  # Replace with your actual frontend payment cancel route URL
+        "callback_url": "http://localhost:5173/payment-success",
+        "return_url": "http://localhost:5173/payment-cancel"
     }
 
     try:
-        import requests
         response = requests.post(paytabs_api_endpoint_url, headers=headers, json=request_body_data)
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
         response_json = response.json()
-        payment_url = response_json.get("redirect_url")  # Replace "payment_url" with the actual field name in PayTabs response
+        payment_url = response_json.get("redirect_url")
 
         if payment_url:
-            return {"payment_url": payment_url}
+            return JSONResponse(content={"payment_url": payment_url}, status_code=200)
         else:
             print("Payment URL not found in PayTabs response")
-            return {"error": "Failed to retrieve payment URL from PayTabs"}
+            return JSONResponse(content={"error": "Failed to retrieve payment URL from PayTabs"}, status_code=500)
 
     except requests.exceptions.RequestException as e:
         print(f"Network error during PayTabs API call: {e}")
-        return {"error": "Failed to connect to PayTabs"}
+        return JSONResponse(content={"error": "Failed to connect to PayTabs"}, status_code=500)
     except Exception as e:
         print(f"Error creating payment session with PayTabs: {e}")
-        return {"error": "Failed to create payment session with PayTabs"}
+        return JSONResponse(content={"error": "Failed to create payment session with PayTabs"}, status_code=500)
