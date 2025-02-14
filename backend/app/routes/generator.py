@@ -5,6 +5,7 @@ from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
 import logging
+import requests
 
 logging.basicConfig(level=logging.INFO)  # Configure basic logging to console
 logger = logging.getLogger(__name__)  # Get a logger instance for this module
@@ -102,50 +103,49 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
 
 @router.post("/create-payment-session")
 async def create_payment_session(cv_text_input: CVTextInput):
-    paytabs_api_endpoint_url = "https://secure-egypt.paytabs.com/payment/request"  # Replace with actual PayTabs TEST API endpoint
+    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"
     headers = {
-        "Authorization": "Bearer S6J9R6HRK9-JK9KH6KBTW-T6GTKRRLBH",  # Replace with your actual Test API Key
+        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",
         "Content-Type": "application/json"
     }
     request_body_data = {
-        "profile_id": "144516",  # Replace with your actual Profile ID
-        "tran_type": "sale",
-        "tran_class": "ecom",
-        "cart_id": "CV-PDF-ORDER-123",  # Placeholder - will be made dynamic later
-        "cart_description": "CV PDF Download",
-        "cart_currency": "USD",
-        "cart_amount": "1.00",
-        "callback_url": "http://localhost:5173/payment-success",  # Replace with your actual frontend payment success route URL
-        "return_url": "http://localhost:5173/payment-cancel"  # Replace with your actual frontend payment cancel route URL
+        "amount": 100,
+        "currency": "EGP",
+        "payment_methods": [4912622],  # Use Integration ID 4912622 (Online Card)
+        "billing_data": {
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "test@example.com",
+            "phone_number": "+201234567890"
+        }
     }
 
     try:
-        logger.info("Initiating PayTabs API request:")
-        logger.info(f"  Endpoint URL: {paytabs_api_endpoint_url}")
+        logger.info("Initiating Paymob API request:")
+        logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
         logger.info(f"  Headers: {headers}")
         logger.info(f"  Request Body: {request_body_data}")
-        import requests
-        response = requests.post(paytabs_api_endpoint_url, headers=headers, json=request_body_data)
+        response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
 
         if response:  # Check if response is not None (to avoid errors if request failed completely)
-            logger.info(f"PayTabs API Response Status Code: {response.status_code}")
-            logger.debug(f"PayTabs API Response Text: {response.text}")  # Use debug for full text
+            logger.info(f"Paymob API Response Status Code: {response.status_code}")
+            logger.debug(f"Paymob API Response Text: {response.text}")  # Use debug for full text
         else:
-            logger.error("PayTabs API Response is None (Network Error)")
+            logger.error("Paymob API Response is None (Network Error)")
 
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
         response_json = response.json()
-        payment_url = response_json.get("redirect_url")
+        payment_url = response_json.get("payment_url")  
 
         if payment_url:
             return {"payment_url": payment_url}
         else:
-            logger.warning("Payment URL not found in PayTabs response")
-            return {"error": "Failed to retrieve payment URL from PayTabs"}
+            logger.warning("Payment URL not found in Paymob response")
+            return {"error": "Failed to retrieve payment URL from Paymob"}
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"Network error during PayTabs API call: {e}")  # Log the exception e
-        return {"error": "Failed to connect to PayTabs"}
+        logger.error(f"Network error during Paymob API call: {e}")  
+        return {"error": "Failed to connect to Paymob"}
     except Exception as e:
-        logger.error(f"Error creating payment session with PayTabs: {e}")  # Log the exception e
-        return {"error": "Failed to create payment session with PayTabs"}
+        logger.error(f"Error creating payment session with Paymob: {e}")  
+        return {"error": "Failed to create payment session with Paymob"}
