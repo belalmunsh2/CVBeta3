@@ -4,6 +4,10 @@ from io import BytesIO
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
+import logging
+
+logging.basicConfig(level=logging.INFO)  # Configure basic logging to console
+logger = logging.getLogger(__name__)  # Get a logger instance for this module
 
 router = APIRouter()
 
@@ -116,21 +120,32 @@ async def create_payment_session(cv_text_input: CVTextInput):
     }
 
     try:
+        logger.info("Initiating PayTabs API request:")
+        logger.info(f"  Endpoint URL: {paytabs_api_endpoint_url}")
+        logger.info(f"  Headers: {headers}")
+        logger.info(f"  Request Body: {request_body_data}")
         import requests
         response = requests.post(paytabs_api_endpoint_url, headers=headers, json=request_body_data)
+
+        if response:  # Check if response is not None (to avoid errors if request failed completely)
+            logger.info(f"PayTabs API Response Status Code: {response.status_code}")
+            logger.debug(f"PayTabs API Response Text: {response.text}")  # Use debug for full text
+        else:
+            logger.error("PayTabs API Response is None (Network Error)")
+
         response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
         response_json = response.json()
-        payment_url = response_json.get("redirect_url")  # Replace "payment_url" with the actual field name in PayTabs response
+        payment_url = response_json.get("redirect_url")
 
         if payment_url:
             return {"payment_url": payment_url}
         else:
-            print("Payment URL not found in PayTabs response")
+            logger.warning("Payment URL not found in PayTabs response")
             return {"error": "Failed to retrieve payment URL from PayTabs"}
 
     except requests.exceptions.RequestException as e:
-        print(f"Network error during PayTabs API call: {e}")
+        logger.error(f"Network error during PayTabs API call: {e}")  # Log the exception e
         return {"error": "Failed to connect to PayTabs"}
     except Exception as e:
-        print(f"Error creating payment session with PayTabs: {e}")
+        logger.error(f"Error creating payment session with PayTabs: {e}")  # Log the exception e
         return {"error": "Failed to create payment session with PayTabs"}
