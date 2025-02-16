@@ -5,6 +5,7 @@
     <textarea v-model="userText" placeholder="Enter your experience and skills here..." rows="10" cols="80"></textarea><br>
     <button @click="generateCvClicked">Generate CV</button>
     <button @click="handleDownloadPdfClick">Download PDF CV</button>
+    <button @click="handlePayNowClick">Pay Now</button>
 
     <div v-if="generatedCvContent" class="cv-output">
       <h2>Generated CV Content:</h2>
@@ -16,6 +17,7 @@
 <script setup>
 import { ref } from 'vue';
 import { generateCV, downloadCvPdf } from '../services/api';
+import { createPaymentSession } from '../services/api'; // Adjust path if needed
 
 const userText = ref('');
 const generatedCvContent = ref('');
@@ -50,6 +52,24 @@ const handleDownloadPdfClick = async () => {
     URL.revokeObjectURL(pdfUrl);
   } catch (error) {
     console.error("Error downloading PDF:", error);
+  }
+};
+
+const handlePayNowClick = async () => {
+  try {
+    const response = await createPaymentSession({ user_text: userText.value }); // Call your API function
+    console.log('Payment session created successfully!', response.data);
+
+    const publicKey = response.data.public_key;
+    const clientSecret = response.data.client_secret;
+    const unifiedCheckoutBaseUrl = response.data.payment_url;
+    const paymentPageUrl = `${unifiedCheckoutBaseUrl}?publicKey=${publicKey}&clientSecret=${clientSecret}`;
+
+    window.location.href = paymentPageUrl; // Redirect to Paymob Payment Page!
+
+  } catch (error) {
+    console.error('Error creating payment session:', error);
+    // Handle error (e.g., display error message to user)
   }
 };
 </script>
