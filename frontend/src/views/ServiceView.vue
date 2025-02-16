@@ -59,12 +59,11 @@ const handlePayNowClick = async () => {
   try {
     const response = await createPaymentSession({ user_text: userText.value }); // Call your API function
     console.log('Payment session API call RESPONSE received (Full Object as JSON):', JSON.stringify(response, null, 2)); // Log full response as JSON
-    console.log('RESPONSE.DATA from API call:', response.data); // Keep existing log for response.data
     console.log('RESPONSE Object Keys:', Object.keys(response)); // Log keys of response object
 
-    const publicKey = response.data.public_key;
-    const clientSecret = response.data.client_secret;
-    const unifiedCheckoutBaseUrl = response.data.payment_url;
+    const publicKey = response.public_key; // Access directly from response
+    const clientSecret = response.client_secret; // Access directly from response
+    const unifiedCheckoutBaseUrl = response.payment_url; // Access directly from response
     const paymentPageUrl = `${unifiedCheckoutBaseUrl}?publicKey=${publicKey}&clientSecret=${clientSecret}`;
 
     window.location.href = paymentPageUrl; // Redirect to Paymob Payment Page!
