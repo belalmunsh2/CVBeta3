@@ -111,7 +111,11 @@ def create_payment_session():
     paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Correct Paymob API endpoint
 
     headers = {
+<<<<<<< HEAD
         "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key - IMPORTANT: Replace with your actual secret key if different!
+=======
+        "Authorization": "Bearer SDJ9R6HRD2-JK9ZMBJRZH-W9JDNGB66K",  # Replace with your actual Test API Key
+>>>>>>> c1dbd0b99f14d37299529eb7379d6580f1d3d2bc
         "Content-Type": "application/json"
     }
 
