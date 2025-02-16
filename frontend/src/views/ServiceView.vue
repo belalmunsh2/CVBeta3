@@ -58,7 +58,8 @@ const handleDownloadPdfClick = async () => {
 const handlePayNowClick = async () => {
   try {
     const response = await createPaymentSession({ user_text: userText.value }); // Call your API function
-    console.log('Payment session created successfully!', response.data);
+    console.log('Payment session API call RESPONSE received:', response); // <--- Log the ENTIRE response object
+    console.log('RESPONSE.DATA from API call:', response.data); // <--- Log response.data specifically
 
     const publicKey = response.data.public_key;
     const clientSecret = response.data.client_secret;
