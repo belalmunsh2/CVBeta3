@@ -6,6 +6,7 @@ from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
 import logging
 import requests
+import os
 
 logging.basicConfig(level=logging.INFO)  # Configure basic logging to console
 logger = logging.getLogger(__name__)  # Get a logger instance for this module
@@ -103,9 +104,6 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
 
 @router.post("/create-payment-session")
 def create_payment_session():
-    import requests
-    import logging
-
     logger = logging.getLogger(__name__)
 
     paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Correct Paymob API endpoint
@@ -142,10 +140,22 @@ def create_payment_session():
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
 
-        payment_url = response_json.get("redirection_url")  # <--- Assuming "redirection_url" is still the correct key - NEED TO VERIFY!
+        # Retrieve Public Key from environment variable
+        public_key = os.environ.get("PAYMOB_PUBLIC_KEY")
+        if not public_key:
+            logger.error("PAYMOB_PUBLIC_KEY environment variable not set!")
+            return {"error": "PAYMOB_PUBLIC_KEY environment variable not set!"}
+
+        #  Construct the payment URL (Unified Checkout base URL)
+        # payment_url = response_json.get("redirection_url")  # <--- Assuming "redirection_url" is still the correct key - NEED TO VERIFY!
+        payment_url = "https://accept.paymob.com/unifiedcheckout/"
 
         if payment_url:
-            return {"payment_url": payment_url}
+            return {
+                "payment_url": payment_url,  # The base Unified Checkout URL (frontend will append parameters)
+                "client_secret": response_json.get("client_secret"),  # Client Secret from Paymob API response
+                "public_key": public_key  # Your Public Key (from environment variable)
+            }
         else:
             logger.warning("Payment URL not found in Paymob response JSON (under 'redirection_url' key)")
             return {"error": "Payment URL not found in Paymob response"}
