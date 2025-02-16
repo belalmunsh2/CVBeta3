@@ -102,23 +102,31 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
     return StreamingResponse(iter_pdf_content(), media_type="application/pdf", headers=headers)
 
 @router.post("/create-payment-session")
-async def create_payment_session(cv_text_input: CVTextInput):
-    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"
+def create_payment_session():
+    import requests
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Correct Paymob API endpoint
+
     headers = {
-        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",
+        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key - IMPORTANT: Replace with your actual secret key if different!
         "Content-Type": "application/json"
     }
+
     request_body_data = {
-        "amount": 100,
+        "amount": 1000,  # Amount in smallest currency unit (piasters for EGP)
         "currency": "EGP",
-        "payment_methods": [4912622],  # Use Integration ID 4912622 (Online Card)
+        "payment_methods": [4912622],  # Your Integration ID
         "billing_data": {
             "first_name": "Test",
             "last_name": "User",
             "email": "test@example.com",
             "phone_number": "+201234567890"
         },
-        "callback_url": "https://webhook.site/e9043d7d-5494-4880-8a89-b45e9a74551d"
+        "callback_url": "https://webhook.site/e9043d7d-5494-4880-8a89-b45e9a74551d"  # Your webhook.site URL
+        # redirection_url parameter is intentionally REMOVED for now
     }
 
     try:
@@ -126,27 +134,25 @@ async def create_payment_session(cv_text_input: CVTextInput):
         logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
         logger.info(f"  Headers: {headers}")
         logger.info(f"  Request Body: {request_body_data}")
+
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-
-        if response:  # Check if response is not None (to avoid errors if request failed completely)
-            logger.info(f"Paymob API Response Status Code: {response.status_code}")
-            logger.debug(f"Paymob API Response Text: {response.text}")  # Use debug for full text
-        else:
-            logger.error("Paymob API Response is None (Network Error)")
-
-        response.raise_for_status()
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
         response_json = response.json()
-        payment_url = response_json.get("payment_url")  
+
+        logger.info(f"Paymob API Response Status Code: {response.status_code}")
+        logger.debug(f"Paymob API Response JSON: {response_json}")
+
+        payment_url = response_json.get("redirection_url")  # <--- Assuming "redirection_url" is still the correct key - NEED TO VERIFY!
 
         if payment_url:
             return {"payment_url": payment_url}
         else:
-            logger.warning("Payment URL not found in Paymob response")
-            return {"error": "Failed to retrieve payment URL from Paymob"}
+            logger.warning("Payment URL not found in Paymob response JSON (under 'redirection_url' key)")
+            return {"error": "Payment URL not found in Paymob response"}
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"Network error during Paymob API call: {e}")  
+        logger.error(f"Network error during Paymob API call: {e}")
         return {"error": "Failed to connect to Paymob"}
     except Exception as e:
-        logger.error(f"Error creating payment session with Paymob: {e}")  
+        logger.error(f"Error creating payment session with Paymob: {e}")
         return {"error": "Failed to create payment session with Paymob"}
