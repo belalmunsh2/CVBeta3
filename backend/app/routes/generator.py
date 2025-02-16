@@ -118,8 +118,7 @@ async def create_payment_session(cv_text_input: CVTextInput):
             "email": "test@example.com",
             "phone_number": "+201234567890"
         },
-        "callback_url": "https://webhook.site/e9043d7d-5494-4880-8a89-b45e9a74551d",
-        "redirection_url": "http://localhost:5173/payment-success"  # <--- Change to frontend URL!
+        "callback_url": "https://webhook.site/e9043d7d-5494-4880-8a89-b45e9a74551d"
     }
 
     try:
