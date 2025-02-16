@@ -104,7 +104,7 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
 async def create_payment_session(cv_text_input: CVTextInput):
     paytabs_api_endpoint_url = "https://secure-egypt.paytabs.com/payment/request"  # Replace with actual PayTabs TEST API endpoint
     headers = {
-        "Authorization": "Bearer S6J9R6HRK9-JK9KH6KBTW-T6GTKRRLBH",  # Replace with your actual Test API Key
+        "Authorization": "Bearer SDJ9R6HRD2-JK9ZMBJRZH-W9JDNGB66K",  # Replace with your actual Test API Key
         "Content-Type": "application/json"
     }
     request_body_data = {
