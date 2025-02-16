@@ -6,9 +6,9 @@ interface CVTextInput {
     user_text: string;
 }
 
-export async function generateCV(payload: { user_text: string }): Promise<string> {
+export async function generateCV(userText: string): Promise<string> {
     try {
-        const response = await axios.post(`${API_BASE_URL}/generate-cv/`, payload);
+        const response = await axios.post(`${API_BASE_URL}/generate-cv/`, { user_text: userText });
         return response.data;
     } catch (error) {
         console.error('Error generating CV:', error);
@@ -28,7 +28,7 @@ export async function downloadCvPdf(payload: { user_text: string }): Promise<Blo
     }
 };
 
-export async function createPaymentSession(payload: { user_text: string }): Promise<any> {
+export async function createPaymentSession(payload: any): Promise<any> {
     try {
         const response = await axios.post(`${API_BASE_URL}/create-payment-session`, payload);
         return response.data;
