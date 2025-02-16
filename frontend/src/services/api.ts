@@ -22,7 +22,7 @@ export async function downloadCvPdf(payload: { user_text: string }): Promise<Blo
             responseType: 'blob', // Important for handling binary data (PDF)
         });
         return response.data;
-    } catch (error) {
+    } catch (error) { 
         console.error("Error calling download-cv-pdf API:", error);
         throw error;
     }
