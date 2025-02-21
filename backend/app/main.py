@@ -7,7 +7,7 @@ app = FastAPI()
 
 # Configure CORS - VERY IMPORTANT 
 origins = [
-    "https://symmetrical-orbit-9xxvqjqqvvj3xv9g-5173.app.github.dev",  
+    "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev",  # <----  MAKE SURE THIS IS EXACTLY AS IN THE ERROR!
 ]
 
 app.add_middleware(
