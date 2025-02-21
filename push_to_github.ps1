@@ -1,7 +1,7 @@
 # Basic push script from CVBeta2
 $repoPath = "C:\Users\ASUS\CascadeProjects\CVBeta3"
 $configPath = "$env:USERPROFILE\.cvbeta3_token"
-$repoUrl = "https://github.com/belalmunsh/CVBeta3"
+$repoUrl = "https://github.com/belalmunsh2/CVBeta3"
 
 Set-Location $repoPath
 
@@ -26,7 +26,7 @@ $securePat = Get-Content $configPath | ConvertTo-SecureString
 $patCred = New-Object System.Management.Automation.PSCredential("user", $securePat)
 $patText = $patCred.GetNetworkCredential().Password
 
-$repoUrl = "https://${patText}@github.com/belalmunsh/CVBeta3"
+$repoUrl = "https://${patText}@github.com/belalmunsh2/CVBeta3"
 
 if (-not (git remote show origin)) {
     git remote add origin $repoUrl
@@ -68,4 +68,4 @@ if ($response.StatusCode -ne 200) {
 
 git add .
 git commit -m "Auto-commit: $(Get-Date -Format 'yyyyMMdd_HHmmss')"
-git push https://github.com/belalmunsh/CVBeta3 master
+git push https://github.com/belalmunsh2/CVBeta3 master
