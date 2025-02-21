@@ -1,12 +1,13 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # Make sure this import is present!
+from fastapi.middleware.cors import CORSMiddleware
 from app.routes import generator
+from app.routes import promo
 
 app = FastAPI()
 
-# Configure CORS - VERY IMPORTANT - REPLACE YOUR_FRONTEND_URL_HERE!
+# Configure CORS - VERY IMPORTANT 
 origins = [
-    "https://symmetrical-orbit-9xxvqjqqvvj3xv9g-5173.app.github.dev",  # <--  REPLACE WITH YOUR EXACT FRONTEND URL!
+    "https://symmetrical-orbit-9xxvqjqqvvj3xv9g-5173.app.github.dev",  
 ]
 
 app.add_middleware(
@@ -17,7 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(generator.router)
+app.include_router(generator.router, prefix="/api")
+app.include_router(promo.router, prefix="/api")
 
 @app.get("/")
 async def root():
