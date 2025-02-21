@@ -39,6 +39,7 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { API_BASE_URL } from '../services/api'
 
 // Props
 const props = defineProps({
@@ -70,7 +71,7 @@ const applyPromoCode = async () => {
   discountPercentage.value = null
 
   try {
-    const response = await axios.post('/api/apply-coupon', {
+    const response = await axios.post(`${API_BASE_URL}/api/apply-coupon`, {
       promo_code: promoCode.value,
       amount: props.amount
     })
