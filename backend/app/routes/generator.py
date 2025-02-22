@@ -115,6 +115,8 @@ def create_paymob_order(amount, currency):
         response.raise_for_status()
         response_json = response.json()
 
+        logger.debug(f"Paymob API Response JSON: {response_json}")  # Added debug logging
+
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
 
