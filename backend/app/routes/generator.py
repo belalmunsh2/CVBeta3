@@ -95,13 +95,19 @@ def create_paymob_order(amount, currency):
                 "amount": amount,
                 "description": "Test item description"
             }
-        ]
+        ],
+        "billing_data": {  
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "test@example.com",
+            "phone_number": "+201234567890"
+        }
     }
 
     try:
         logger.info("Initiating Paymob API request:")
         logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
-        logger.info(f"  Request Body: {request_body_data}")  # Don't log headers as they contain sensitive info
+        logger.info(f"  Request Body: {request_body_data}")  
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
         response.raise_for_status()
@@ -120,7 +126,7 @@ def create_paymob_order(amount, currency):
         return {"error": "Failed to create Paymob order"}
 
 def generate_payment_key(amount, currency, order_id):
-    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"  # Correct endpoint for payment key generation
+    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"  
 
     # Get Secret key from environment
     secret_key = os.environ.get("PAYMOB_SECRET_KEY")
@@ -149,7 +155,7 @@ def generate_payment_key(amount, currency, order_id):
     try:
         logger.info("Generating payment key:")
         logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
-        logger.info(f"  Request Body: {request_body_data}")  # Don't log headers as they contain sensitive info
+        logger.info(f"  Request Body: {request_body_data}")  
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
         response.raise_for_status()
