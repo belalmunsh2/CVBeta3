@@ -23,9 +23,9 @@ async def create_payment_session(payload: PaymentSessionRequest):
     """
     logger = logging.getLogger(__name__)
     
-    # Verify API key is available
-    if not os.environ.get("PAYMOB_API_KEY"):
-        logger.error("PAYMOB_API_KEY environment variable not set")
+    # Verify Secret key is available
+    if not os.environ.get("PAYMOB_SECRET_KEY"):
+        logger.error("PAYMOB_SECRET_KEY environment variable not set")
         raise HTTPException(status_code=500, detail="Payment service configuration error")
     
     # Step 1: Create Order
@@ -56,20 +56,20 @@ async def create_payment_session(payload: PaymentSessionRequest):
     logger.info(f"Successfully created payment session. URL: {payment_url}")
     return {
         "payment_url": payment_url,
-        "public_key": config.PAYMOB_PUBLIC_KEY
+        "public_key": os.environ.get("PAYMOB_PUBLIC_KEY")
     }
 
 def create_paymob_order(amount, currency):
     paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Reverted to potentially stable version
 
-    # Get API key from environment
-    api_key = os.environ.get("PAYMOB_API_KEY")
-    if not api_key:
-        logger.error("PAYMOB_API_KEY environment variable not set")
+    # Get Secret key from environment
+    secret_key = os.environ.get("PAYMOB_SECRET_KEY")
+    if not secret_key:
+        logger.error("PAYMOB_SECRET_KEY environment variable not set")
         return {"error": "Payment service configuration error"}
 
     headers = {
-        "Authorization": f"Token {api_key}",
+        "Authorization": f"Token {secret_key}",
         "Content-Type": "application/json"
     }
 
@@ -109,14 +109,14 @@ def create_paymob_order(amount, currency):
 def generate_payment_key(amount, currency, order_id):
     paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Reverted to potentially stable version
 
-    # Get API key from environment
-    api_key = os.environ.get("PAYMOB_API_KEY")
-    if not api_key:
-        logger.error("PAYMOB_API_KEY environment variable not set")
+    # Get Secret key from environment
+    secret_key = os.environ.get("PAYMOB_SECRET_KEY")
+    if not secret_key:
+        logger.error("PAYMOB_SECRET_KEY environment variable not set")
         return {"error": "Payment service configuration error"}
 
     headers = {
-        "Authorization": f"Token {api_key}",
+        "Authorization": f"Token {secret_key}",
         "Content-Type": "application/json"
     }
 
