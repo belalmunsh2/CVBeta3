@@ -8,7 +8,6 @@ import logging
 import requests
 import os
 
-
 logging.basicConfig(level=logging.INFO)  # Configure basic logging to console
 logger = logging.getLogger(__name__)  # Get a logger instance for this module
 
@@ -104,56 +103,60 @@ async def download_cv_pdf(cv_text_input: CVTextInput):
     return StreamingResponse(iter_pdf_content(), media_type="application/pdf", headers=headers)
 
 @router.post("/create-payment-session")
-async def create_payment_session():
+def create_payment_session():
     logger = logging.getLogger(__name__)
 
-    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"
+    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Correct Paymob API endpoint
 
     headers = {
-        "Authorization": f"Token {os.environ.get('PAYMOB_API_KEY')}",
+        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key
         "Content-Type": "application/json"
     }
 
     request_body_data = {
         "amount": 1000,  # Amount in smallest currency unit (piasters for EGP)
         "currency": "EGP",
-        "payment_methods": [int(os.environ.get('PAYMOB_INTEGRATION_ID', 0))],
+        "payment_methods": [4912622],  # Your Integration ID
         "billing_data": {
             "first_name": "Test",
             "last_name": "User",
             "email": "test@example.com",
             "phone_number": "+201234567890"
         },
-        "callback_url": os.environ.get('PAYMOB_CALLBACK_URL', '')
+        "callback_url": "https://webhook.site/e9043d7d-5494-4880-8a89-b45e9a74551d"  # Your webhook.site URL
     }
 
     try:
-        logger.info("Initiating Paymob API request")
-        logger.debug(f"Request Body: {request_body_data}")
+        logger.info("Initiating Paymob API request:")
+        logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
+        logger.info(f"  Headers: {headers}")
+        logger.info(f"  Request Body: {request_body_data}")
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-        response.raise_for_status()
+        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
         response_json = response.json()
 
-        logger.debug(f"Paymob API Response: {response_json}")
+        logger.info(f"Paymob API Response Status Code: {response.status_code}")
+        logger.debug(f"Paymob API Response JSON: {response_json}")
 
         # Get the payment URL from the response
         payment_url = response_json.get("redirection_url")
         if not payment_url:
-            logger.error("Payment URL not found in Paymob response")
+            logger.error("Redirection URL not found in Paymob response")
+            logger.debug(f"Response keys available: {response_json.keys()}")
             return {"error": "Payment URL not found in provider response"}
 
-        # Get the client secret from the response
+        # Get the required keys for payment
         client_secret = response_json.get("client_secret")
         if not client_secret:
             logger.error("Client secret not found in Paymob response")
             return {"error": "Client secret not found in provider response"}
 
-        # Return the complete payment data
+        # Return all necessary data for frontend to construct the complete payment URL
         return {
             "payment_url": payment_url,
             "client_secret": client_secret,
-            "public_key": os.environ.get('PAYMOB_PUBLIC_KEY', '')
+            "public_key": os.environ.get("PAYMOB_PUBLIC_KEY")
         }
 
     except requests.exceptions.RequestException as e:
