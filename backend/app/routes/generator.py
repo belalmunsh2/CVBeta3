@@ -110,21 +110,21 @@ async def create_payment_session():
     paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"
 
     headers = {
-        "Authorization": f"Token {config.PAYMOB_API_KEY}",
+        "Authorization": f"Token {os.environ.get('PAYMOB_API_KEY')}",
         "Content-Type": "application/json"
     }
 
     request_body_data = {
         "amount": 1000,  # Amount in smallest currency unit (piasters for EGP)
         "currency": "EGP",
-        "payment_methods": [config.PAYMOB_INTEGRATION_ID],
+        "payment_methods": [int(os.environ.get('PAYMOB_INTEGRATION_ID', 0))],
         "billing_data": {
             "first_name": "Test",
             "last_name": "User",
             "email": "test@example.com",
             "phone_number": "+201234567890"
         },
-        "callback_url": config.PAYMOB_CALLBACK_URL
+        "callback_url": os.environ.get('PAYMOB_CALLBACK_URL', '')
     }
 
     try:
@@ -153,7 +153,7 @@ async def create_payment_session():
         return {
             "payment_url": payment_url,
             "client_secret": client_secret,
-            "public_key": config.PAYMOB_PUBLIC_KEY
+            "public_key": os.environ.get('PAYMOB_PUBLIC_KEY', '')
         }
 
     except requests.exceptions.RequestException as e:
