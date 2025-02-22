@@ -120,7 +120,7 @@ def create_paymob_order(amount, currency):
         return {"error": "Failed to create Paymob order"}
 
 def generate_payment_key(amount, currency, order_id):
-    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Reverted to potentially stable version
+    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"  # Correct endpoint for payment key generation
 
     # Get Secret key from environment
     secret_key = os.environ.get("PAYMOB_SECRET_KEY")
