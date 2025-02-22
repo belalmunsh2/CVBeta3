@@ -89,6 +89,7 @@ def create_paymob_order(amount, currency):
     request_body_data = {
         "amount": amount,  # Amount in smallest currency unit (piasters for EGP)
         "currency": currency,
+        "delivery_needed": False,  # Digital service, no delivery needed
         "items": [
             {
                 "name": "Test Item",
@@ -96,18 +97,19 @@ def create_paymob_order(amount, currency):
                 "description": "Test item description"
             }
         ],
-        "billing_data": {  
+        "billing_data": {
             "first_name": "Test",
             "last_name": "User",
             "email": "test@example.com",
-            "phone_number": "+201234567890"
+            "phone_number": "+201234567890",
+            "country": "EGY"  # Egypt country code
         }
     }
 
     try:
         logger.info("Initiating Paymob API request:")
         logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
-        logger.info(f"  Request Body: {request_body_data}")  
+        logger.info(f"  Request Body: {request_body_data}")  # Don't log headers as they contain sensitive info
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
         response.raise_for_status()
