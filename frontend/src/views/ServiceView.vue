@@ -60,7 +60,6 @@ const isLoading = ref(false);
 const error = ref('');
 const currentAmount = ref(1000); // Base price in cents
 const discountedAmount = ref(null);
-const loading = ref(false);
 
 const handleDiscountApplied = (discountData) => {
   console.log("Discount Applied in ServiceView:", discountData);
@@ -110,26 +109,19 @@ const handleDownloadClick = async () => {
 };
 
 const handlePayNowClick = async () => {
-  error.value = '';
-  loading.value = true;
-
   try {
     const response = await createPaymentSession({
-      amount: finalAmount.value // Use computed final amount that includes any discounts
+      amount: finalAmount.value // Use the computed final amount
     });
-
-    if (response.payment_url && response.public_key && response.client_secret) {
-      // Construct the complete payment URL with required query parameters
-      const paymentPageUrl = `${response.payment_url}?publicKey=${response.public_key}&clientSecret=${response.client_secret}`;
-      window.location.href = paymentPageUrl;
+    
+    if (response.payment_url) {
+      window.location.href = response.payment_url;
     } else {
-      error.value = 'Error initiating payment. Payment URL or keys missing.';
+      error.value = 'Error initiating payment. Please try again.';
     }
   } catch (err) {
-    console.error('Payment error:', err);
-    error.value = err.response?.data?.error || 'Failed to initiate payment. Please try again.';
-  } finally {
-    loading.value = false;
+    console.error('Error creating payment session:', err);
+    error.value = 'Error initiating payment. Please try again.';
   }
 };
 </script>

@@ -109,7 +109,7 @@ def create_payment_session():
     paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Correct Paymob API endpoint
 
     headers = {
-        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key
+        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key - IMPORTANT: Replace with your actual secret key if different!
         "Content-Type": "application/json"
     }
 
@@ -124,6 +124,7 @@ def create_payment_session():
             "phone_number": "+201234567890"
         },
         "callback_url": "https://webhook.site/e9043d7d-5494-4880-8a89-b45e9a74551d"  # Your webhook.site URL
+        # redirection_url parameter is intentionally REMOVED for now
     }
 
     try:
@@ -139,29 +140,29 @@ def create_payment_session():
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
 
-        # Get the payment URL from the response
-        payment_url = response_json.get("redirection_url")
-        if not payment_url:
-            logger.error("Redirection URL not found in Paymob response")
-            logger.debug(f"Response keys available: {response_json.keys()}")
-            return {"error": "Payment URL not found in provider response"}
+        # Retrieve Public Key from environment variable
+        public_key = os.environ.get("PAYMOB_PUBLIC_KEY")
+        if not public_key:
+            logger.error("PAYMOB_PUBLIC_KEY environment variable not set!")
+            return {"error": "PAYMOB_PUBLIC_KEY environment variable not set!"}
 
-        # Get the required keys for payment
-        client_secret = response_json.get("client_secret")
-        if not client_secret:
-            logger.error("Client secret not found in Paymob response")
-            return {"error": "Client secret not found in provider response"}
+        #  Construct the payment URL (Unified Checkout base URL)
+        # payment_url = response_json.get("redirection_url")  # <--- Assuming "redirection_url" is still the correct key - NEED TO VERIFY!
+        payment_url = "https://accept.paymob.com/unifiedcheckout/"
 
-        # Return all necessary data for frontend to construct the complete payment URL
-        return {
-            "payment_url": payment_url,
-            "client_secret": client_secret,
-            "public_key": os.environ.get("PAYMOB_PUBLIC_KEY")
-        }
+        if payment_url:
+            return {
+                "payment_url": payment_url,  # The base Unified Checkout URL (frontend will append parameters)
+                "client_secret": response_json.get("client_secret"),  # Client Secret from Paymob API response
+                "public_key": public_key  # Your Public Key (from environment variable)
+            }
+        else:
+            logger.warning("Payment URL not found in Paymob response JSON (under 'redirection_url' key)")
+            return {"error": "Payment URL not found in Paymob response"}
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error during Paymob API call: {e}")
-        return {"error": "Failed to connect to payment provider"}
+        return {"error": "Failed to connect to Paymob"}
     except Exception as e:
-        logger.error(f"Error creating payment session: {e}")
-        return {"error": "Failed to create payment session"}
+        logger.error(f"Error creating payment session with Paymob: {e}")
+        return {"error": "Failed to create payment session with Paymob"}
