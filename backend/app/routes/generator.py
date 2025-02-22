@@ -1,109 +1,15 @@
 from fastapi import APIRouter, Response, HTTPException
 from fastapi.responses import PlainTextResponse, StreamingResponse
-from io import BytesIO
-from app.models.schemas import CVTextInput
-from ..services.gemini_ai_service import generate_cv_content_gemini
-from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
+from pydantic import BaseModel
+from typing import Optional
 import logging
 import requests
 import os
-from pydantic import BaseModel
-from typing import Optional
 from app import config
 
-logging.basicConfig(level=logging.INFO)  # Configure basic logging to console
-logger = logging.getLogger(__name__)  # Get a logger instance for this module
-
+# Configure logging
+logger = logging.getLogger(__name__)
 router = APIRouter()
-
-def parse_cv_content(content: str) -> dict:
-    """
-    Parse the CV content from markdown-style text into structured sections
-    """
-    sections = {}
-    current_section = None
-    current_items = []
-    
-    for line in content.split('\n'):
-        line = line.strip()
-        if not line:
-            continue
-            
-        # Check if this is a section header (surrounded by **)
-        if line.startswith('**') and line.endswith('**'):
-            # If we were building a previous section, save it
-            if current_section:
-                sections[current_section] = current_items
-            
-            # Start new section
-            current_section = line.strip('*').strip()
-            current_items = []
-        # Check if this is a bullet point
-        elif line.startswith('*'):
-            current_items.append(line[1:].strip())
-        # Otherwise it's regular text
-        else:
-            current_items.append(line)
-    
-    # Don't forget to save the last section
-    if current_section:
-        sections[current_section] = current_items
-        
-    return sections
-
-def generate_html_from_ai_content(sections: dict) -> str:
-    """Generates HTML string from parsed CV sections."""
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Simplified CV Test</title>
-    </head>
-    <body>
-        <div class="cv-container">
-            <div class="section summary">
-                <h2>Summary</h2>
-                <p>This is a test summary.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    return html_content
-
-@router.get("/health")
-async def health_check():
-    return {"status": "OK"}
-
-@router.post("/generate-cv/")
-async def generate_cv(cv_text_input: CVTextInput) -> PlainTextResponse:
-    """
-    Generates CV content in plain text (temporarily for debugging - NO WEASYPRINT).
-    """
-    user_text = cv_text_input.user_text
-    ai_cv_content = generate_cv_content_gemini(user_text)
-    print("Backend: /generate-cv/ - AI generated content (plain text, no PDF):")
-    print(ai_cv_content)
-    return PlainTextResponse(content=ai_cv_content)
-
-@router.post("/download-cv-pdf/")
-async def download_cv_pdf(cv_text_input: CVTextInput):
-    """
-    Generates CV content using Gemini AI and returns it as a downloadable PDF file.
-    """
-    user_text = cv_text_input.user_text
-    ai_cv_content = generate_cv_content_gemini(user_text)
-    html_content = generate_cv_html(ai_cv_content)
-    pdf_bytes = convert_html_to_pdf(html_content)
-
-    def iter_pdf_content():
-        yield pdf_bytes
-
-    headers = {
-        'Content-Disposition': 'attachment; filename="cv.pdf"',
-        'Content-Type': 'application/pdf'
-    }
-    return StreamingResponse(iter_pdf_content(), media_type="application/pdf", headers=headers)
 
 class PaymentSessionRequest(BaseModel):
     amount: int
@@ -116,6 +22,11 @@ async def create_payment_session(payload: PaymentSessionRequest):
     Amount should be in smallest currency unit (e.g., cents for USD, piasters for EGP)
     """
     logger = logging.getLogger(__name__)
+    
+    # Verify API key is available
+    if not os.environ.get("PAYMOB_API_KEY"):
+        logger.error("PAYMOB_API_KEY environment variable not set")
+        raise HTTPException(status_code=500, detail="Payment service configuration error")
     
     # Step 1: Create Order
     order_response = create_paymob_order(payload.amount, payload.currency)
@@ -149,10 +60,16 @@ async def create_payment_session(payload: PaymentSessionRequest):
     }
 
 def create_paymob_order(amount, currency):
-    paymob_api_endpoint_url = "https://accept.paymob.com/api/orders"  # Correct Paymob API endpoint
+    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Reverted to potentially stable version
+
+    # Get API key from environment
+    api_key = os.environ.get("PAYMOB_API_KEY")
+    if not api_key:
+        logger.error("PAYMOB_API_KEY environment variable not set")
+        return {"error": "Payment service configuration error"}
 
     headers = {
-        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key - IMPORTANT: Replace with your actual secret key if different!
+        "Authorization": f"Token {api_key}",
         "Content-Type": "application/json"
     }
 
@@ -171,11 +88,10 @@ def create_paymob_order(amount, currency):
     try:
         logger.info("Initiating Paymob API request:")
         logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
-        logger.info(f"  Headers: {headers}")
-        logger.info(f"  Request Body: {request_body_data}")
+        logger.info(f"  Request Body: {request_body_data}")  # Don't log headers as they contain sensitive info
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
         response_json = response.json()
 
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
@@ -191,15 +107,21 @@ def create_paymob_order(amount, currency):
         return {"error": "Failed to create Paymob order"}
 
 def generate_payment_key(amount, currency, order_id):
-    paymob_api_endpoint_url = "https://accept.paymob.com/api/payment_keys"  # Correct Paymob API endpoint
+    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"  # Reverted to potentially stable version
+
+    # Get API key from environment
+    api_key = os.environ.get("PAYMOB_API_KEY")
+    if not api_key:
+        logger.error("PAYMOB_API_KEY environment variable not set")
+        return {"error": "Payment service configuration error"}
 
     headers = {
-        "Authorization": "Token egy_sk_test_9586098f4302f1cbcb991b99ce26b04e8a864faeed484bbc12ae51c3bbadd182",  # Your Secret Key - IMPORTANT: Replace with your actual secret key if different!
+        "Authorization": f"Token {api_key}",
         "Content-Type": "application/json"
     }
 
     request_body_data = {
-        "amount": amount,  # Amount in smallest currency unit (piasters for EGP)
+        "amount": amount,
         "currency": currency,
         "order_id": order_id,
         "integration_id": config.PAYMOB_INTEGRATION_ID,
@@ -212,13 +134,12 @@ def generate_payment_key(amount, currency, order_id):
     }
 
     try:
-        logger.info("Initiating Paymob API request:")
+        logger.info("Generating payment key:")
         logger.info(f"  Endpoint URL: {paymob_api_endpoint_url}")
-        logger.info(f"  Headers: {headers}")
-        logger.info(f"  Request Body: {request_body_data}")
+        logger.info(f"  Request Body: {request_body_data}")  # Don't log headers as they contain sensitive info
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-        response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+        response.raise_for_status()
         response_json = response.json()
 
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
