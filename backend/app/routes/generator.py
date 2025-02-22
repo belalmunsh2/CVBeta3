@@ -7,7 +7,7 @@ from ..services.pdf_service import generate_cv_html, convert_html_to_pdf
 import logging
 import requests
 import os
-from ..config import config
+
 
 logging.basicConfig(level=logging.INFO)  # Configure basic logging to console
 logger = logging.getLogger(__name__)  # Get a logger instance for this module
