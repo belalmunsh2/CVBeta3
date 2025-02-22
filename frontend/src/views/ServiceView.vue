@@ -113,15 +113,16 @@ const handlePayNowClick = async () => {
     const response = await createPaymentSession({
       amount: finalAmount.value // Use the computed final amount
     });
-    
-    if (response.payment_url) {
-      window.location.href = response.payment_url;
+
+    if (response.payment_url && response.public_key && response.client_secret) {
+      const paymentPageUrl = `${response.payment_url}?publicKey=${response.public_key}&clientSecret=${response.client_secret}`;
+      window.location.href = paymentPageUrl;
     } else {
-      error.value = 'Error initiating payment. Please try again.';
+      error.value = 'Error initiating payment.';
     }
   } catch (err) {
-    console.error('Error creating payment session:', err);
-    error.value = 'Error initiating payment. Please try again.';
+    error.value = 'An unexpected error occurred. Please try again.';
+    console.error("Payment initiation error:", err);
   }
 };
 </script>

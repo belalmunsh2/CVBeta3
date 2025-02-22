@@ -147,8 +147,7 @@ def create_payment_session():
             return {"error": "PAYMOB_PUBLIC_KEY environment variable not set!"}
 
         #  Construct the payment URL (Unified Checkout base URL)
-        # payment_url = response_json.get("redirection_url")  # <--- Assuming "redirection_url" is still the correct key - NEED TO VERIFY!
-        payment_url = "https://accept.paymob.com/unifiedcheckout/"
+        payment_url = response_json.get("redirection_url")
 
         if payment_url:
             return {
