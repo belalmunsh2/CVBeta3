@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 # Payment service functions will be defined here
 
 def create_paymob_order(amount, currency):
-    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"
+    paymob_api_endpoint_url = "https://accept.paymob.com/api/ecommerce/orders"
 
     # Get Secret key from environment
     secret_key = os.environ.get("PAYMOB_SECRET_KEY")
