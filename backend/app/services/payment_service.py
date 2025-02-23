@@ -52,6 +52,7 @@ def create_paymob_order(amount, currency):
         logger.debug("Checking response status for errors...")  # Log before raise_for_status
         response.raise_for_status()
         
+        logger.debug(f"Paymob API Response Text (before JSON parsing): {response.text}")  # Log raw response text
         response_json = response.json()
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
@@ -103,6 +104,7 @@ def generate_payment_key(amount, currency, order_id):
         logger.debug("Checking response status for errors...")  # Log before raise_for_status
         response.raise_for_status()
         
+        logger.debug(f"Paymob API Response Text (before JSON parsing): {response.text}")  # Log raw response text
         response_json = response.json()
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
