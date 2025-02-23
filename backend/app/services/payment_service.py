@@ -38,7 +38,8 @@ def create_paymob_order(amount, currency):
             "email": "test@example.com",
             "phone_number": "+201234567890",
             "country": "EGY"  # Egypt country code
-        }
+        },
+        "payment_methods": ["card"]  # Specify payment method as "card"
     }
 
     try:
