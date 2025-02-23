@@ -1,8 +1,14 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.generator import router as generator_router
 from app.routes.promo import router as promo_router
 from app.routes.payment import router as payment_router
+
+# Configure logging at DEBUG level
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.debug("DEBUG log message from main.py - DEFINITIVE LOGGING TEST - IS DEBUG LOGGING WORKING?")
 
 app = FastAPI()
 
@@ -26,7 +32,7 @@ app.include_router(payment_router, prefix="/api", tags=["payment"])
 
 @app.get("/")
 async def root():
-    return {"message": "Hello Backend is working"}
+    return {"message": "Welcome to the CV Generator API"}
 
 # REMOVE THIS BLOCK - Not needed in Codespaces
 # if __name__ == "__main__":
