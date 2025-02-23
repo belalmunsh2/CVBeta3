@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import generator
-from app.routes import promo
+from app.routes.generator import router as generator_router
+from app.routes.promo import router as promo_router
+from app.routes.payment import router as payment_router
 
 app = FastAPI()
 
@@ -18,8 +19,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(generator.router, prefix="/api")
-app.include_router(promo.router, prefix="/api")
+# Include routers
+app.include_router(generator_router, prefix="/api", tags=["generator"])
+app.include_router(promo_router, prefix="/api", tags=["promo"])
+app.include_router(payment_router, prefix="/api", tags=["payment"])
 
 @app.get("/")
 async def root():
