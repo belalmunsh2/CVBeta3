@@ -21,11 +21,6 @@ async def create_payment_session(payload: PaymentSessionRequest):
     """
     logger = logging.getLogger(__name__)
     
-    # Verify Secret key is available
-    if not os.environ.get("PAYMOB_SECRET_KEY"):
-        logger.error("PAYMOB_SECRET_KEY environment variable not set")
-        raise HTTPException(status_code=500, detail="Payment service configuration error")
-    
     # Step 1: Create Order
     order_response = create_paymob_order(payload.amount, payload.currency)
     if "error" in order_response:
