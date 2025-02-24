@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_paymob_auth_token():
     auth_url = "https://accept.paymob.com/api/auth/tokens"
     headers = {"Content-Type": "application/json"}  # Headers for auth request
-    request_body = {"api_key": config.PAYMOB_SECRET_KEY}  # API Key in request body
+    request_body = {"api_key": config.PAYMOB_API_AUTH_KEY}  # API Key in request body - CORRECTED LINE
 
     try:
         logger.info("Initiating Paymob Authentication Token Request...")  # Log auth request
@@ -72,11 +72,11 @@ def create_paymob_order(amount, currency):
         logger.debug(f"  Request Body: {request_body_data}")  # Log request body for data verification
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-        
+
         logger.debug("Checking response status for errors...")  # Log before raise_for_status
         logger.debug(f"Paymob API Response Text (before JSON parsing): {response.text}")  # Log raw response text
         response.raise_for_status()
-        
+
         response_json = response.json()
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
@@ -91,7 +91,7 @@ def create_paymob_order(amount, currency):
         return {"error": "Failed to create Paymob order"}
 
 def generate_payment_key(amount, currency, order_id):
-    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"  
+    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"
 
     token = get_paymob_auth_token()  # Get the auth token
     if not token:  # Check if token was obtained successfully
@@ -122,11 +122,11 @@ def generate_payment_key(amount, currency, order_id):
         logger.debug(f"  Request Body: {request_body_data}")  # Log request body for data verification
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-        
+
         logger.debug("Checking response status for errors...")  # Log before raise_for_status
         logger.debug(f"Paymob API Response Text (before JSON parsing): {response.text}")  # Log raw response text
         response.raise_for_status()
-        
+
         response_json = response.json()
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
