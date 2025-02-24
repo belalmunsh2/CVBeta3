@@ -3,6 +3,7 @@ import os
 import requests
 from app import config
 import uuid
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ def create_paymob_order(amount, currency):
     }
 
     merchant_order_id = str(uuid.uuid4())
+    current_timestamp = int(time.time())  # Generate current timestamp
 
     request_body_data = {
         "amount": amount,  # Amount in smallest currency unit (piasters for EGP)
@@ -66,7 +68,8 @@ def create_paymob_order(amount, currency):
             "country": "EGY"  # Egypt country code
         },
         "payment_methods": ["card"],  # Specify payment method as "card"
-        "merchant_order_id": merchant_order_id
+        "merchant_order_id": merchant_order_id,
+        "timestamp": current_timestamp  # Include timestamp in payload
     }
 
     try:

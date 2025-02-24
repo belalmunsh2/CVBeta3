@@ -113,6 +113,9 @@ let testPaymentCounter = 0;
 const handlePayNowClick = async () => {
   testPaymentCounter++;
   const testEmail = 'test' + testPaymentCounter + '@example.com';
+  const testFirstName = 'Test' + testPaymentCounter;
+  const testLastName = 'User' + testPaymentCounter;
+  const itemDescription = 'AI-Powered CV Generation Test ' + testPaymentCounter;
   const amount = finalAmount.value; // Amount in cents
 
   try {
@@ -120,14 +123,21 @@ const handlePayNowClick = async () => {
     error.value = '';
 
     const response = await createPaymentSession({
-      amount: amount, // Assuming 'amount' is already correctly set (e.g., from finalAmount.value)
+      amount: amount,
       billing_data: {
         email: testEmail,
-        first_name: "Test",
-        last_name: "User",
+        first_name: testFirstName,
+        last_name: testLastName,
         phone_number: "+201234567890",
         country: "EGY"
-      }
+      },
+      items: [
+        {
+          name: "CV Generation Service",
+          amount: amount,
+          description: itemDescription
+        }
+      ]
     });
 
     if (response && response.payment_url) {
