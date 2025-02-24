@@ -2,6 +2,7 @@ import logging
 import os
 import requests
 from app import config
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,8 @@ def create_paymob_order(amount, currency):
         "Content-Type": "application/json"
     }
 
+    merchant_order_id = str(uuid.uuid4())
+
     request_body_data = {
         "amount": amount,  # Amount in smallest currency unit (piasters for EGP)
         "currency": currency,
@@ -62,7 +65,8 @@ def create_paymob_order(amount, currency):
             "phone_number": "+201234567890",
             "country": "EGY"  # Egypt country code
         },
-        "payment_methods": ["card"]  # Specify payment method as "card"
+        "payment_methods": ["card"],  # Specify payment method as "card"
+        "merchant_order_id": merchant_order_id
     }
 
     try:
