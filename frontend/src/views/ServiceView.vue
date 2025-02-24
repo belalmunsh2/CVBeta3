@@ -58,7 +58,7 @@ const userText = ref('');
 const cvContent = ref('');
 const isLoading = ref(false);
 const error = ref('');
-const currentAmount = ref(1000); // Base price in cents
+const currentAmount = ref(1001); // Base price in cents
 const discountedAmount = ref(null);
 
 const handleDiscountApplied = (discountData) => {
