@@ -20,10 +20,10 @@ if not PAYMOB_PUBLIC_KEY:
     raise ValueError("PAYMOB_PUBLIC_KEY environment variable not set!")
 logger.info(f"Config Value - PAYMOB_PUBLIC_KEY: {PAYMOB_PUBLIC_KEY}")
 
-PAYMOB_SECRET_KEY = os.environ.get("PAYMOB_SECRET_KEY")
-if not PAYMOB_SECRET_KEY:
-    raise ValueError("PAYMOB_SECRET_KEY environment variable not set!")
-logger.info(f"Config Value - PAYMOB_SECRET_KEY: {PAYMOB_SECRET_KEY}")
+PAYMOB_API_AUTH_KEY = os.environ.get("PAYMOB_API_AUTH_KEY")
+if not PAYMOB_API_AUTH_KEY:
+    raise ValueError("PAYMOB_API_AUTH_KEY environment variable not set!")
+logger.info(f"Config Value - PAYMOB_API_AUTH_KEY: {PAYMOB_API_AUTH_KEY}")
 
 PAYMOB_INTEGRATION_ID = os.environ.get("PAYMOB_INTEGRATION_ID")
 if not PAYMOB_INTEGRATION_ID:
