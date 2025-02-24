@@ -108,20 +108,37 @@ const handleDownloadClick = async () => {
   }
 };
 
+let testPaymentCounter = 0;
+
 const handlePayNowClick = async () => {
+  testPaymentCounter++;
+  const testEmail = 'test' + testPaymentCounter + '@example.com';
+  const amount = finalAmount.value; // Amount in cents
+
   try {
+    isLoading.value = true;
+    error.value = '';
+
     const response = await createPaymentSession({
-      amount: finalAmount.value // Use the computed final amount
+      amount: amount, // Assuming 'amount' is already correctly set (e.g., from finalAmount.value)
+      billing_data: {
+        email: testEmail,
+        first_name: "Test",
+        last_name: "User",
+        phone_number: "+201234567890",
+        country: "EGY"
+      }
     });
-    
-    if (response.payment_url) {
+
+    if (response && response.payment_url) {
       window.location.href = response.payment_url;
     } else {
-      error.value = 'Error initiating payment. Please try again.';
+      error.value = 'Failed to initiate payment. Please try again.';
     }
-  } catch (err) {
-    console.error('Error creating payment session:', err);
-    error.value = 'Error initiating payment. Please try again.';
+  } catch (e) {
+    error.value = 'Payment initiation failed. Please check your connection and try again.';
+  } finally {
+    isLoading.value = false;
   }
 };
 </script>
