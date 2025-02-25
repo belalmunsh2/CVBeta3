@@ -140,8 +140,13 @@ const handlePayNowClick = async () => {
       ]
     });
 
-    if (response && response.payment_url) {
-      window.location.href = response.payment_url;
+    if (response && response.client_secret) {
+      const publicKey = import.meta.env.VITE_PAYMOB_PUBLIC_KEY;
+      const clientSecret = response.client_secret;
+      
+      const unifiedCheckoutURL = `https://accept.paymob.com/unifiedcheckout/?publicKey=${publicKey}&clientSecret=${clientSecret}`;
+      
+      window.location.href = unifiedCheckoutURL;
     } else {
       error.value = 'Failed to initiate payment. Please try again.';
     }

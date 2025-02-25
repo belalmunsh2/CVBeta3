@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import List, Dict, Optional, Any
 import logging
 import os
 import requests
@@ -9,9 +10,24 @@ from ..services.payment_service import create_paymob_order, generate_payment_key
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+class BillingData(BaseModel):
+    email: str
+    first_name: str
+    last_name: str
+    phone_number: str
+    country: str
+
+class Item(BaseModel):
+    name: str
+    amount: int
+    description: str
+    quantity: int = 1
+
 class PaymentSessionRequest(BaseModel):
     amount: int
     currency: str = "EGP"
+    billing_data: Optional[BillingData] = None
+    items: Optional[List[Item]] = None
 
 @router.post("/create-payment-session")
 async def create_payment_session(payload: PaymentSessionRequest):
@@ -21,33 +37,28 @@ async def create_payment_session(payload: PaymentSessionRequest):
     """
     logger = logging.getLogger(__name__)
     
-    # Step 1: Create Order
-    order_response = create_paymob_order(payload.amount, payload.currency)
+    # Extract billing_data and items if provided
+    billing_data = payload.billing_data.dict() if payload.billing_data else None
+    items = [item.dict() for item in payload.items] if payload.items else None
+    
+    # Step 1: Create Order with Intention API
+    order_response = create_paymob_order(
+        payload.amount, 
+        payload.currency,
+        billing_data=billing_data,
+        items=items
+    )
+    
     if "error" in order_response:
         logger.error(f"Failed to create Paymob order: {order_response['error']}")
         raise HTTPException(status_code=400, detail=order_response["error"])
     
-    order_id = order_response.get("id")
-    if not order_id:
-        logger.error("Order ID not found in Paymob response")
+    # Return client_secret directly from the Intention API response
+    if "client_secret" in order_response:
+        logger.info(f"Successfully created payment intention with client_secret")
+        return {
+            "client_secret": order_response["client_secret"]
+        }
+    else:
+        logger.error("Client secret not found in Paymob response")
         raise HTTPException(status_code=400, detail="Invalid response from payment provider")
-
-    # Step 2: Generate Payment Key
-    payment_key_response = generate_payment_key(payload.amount, payload.currency, order_id)
-    if "error" in payment_key_response:
-        logger.error(f"Failed to generate payment key: {payment_key_response['error']}")
-        raise HTTPException(status_code=400, detail=payment_key_response["error"])
-    
-    token = payment_key_response.get("token")
-    if not token:
-        logger.error("Payment token not found in Paymob response")
-        raise HTTPException(status_code=400, detail="Invalid response from payment provider")
-
-    # Step 3: Construct Hosted Payment Page URL
-    payment_url = f"https://accept.paymob.com/api/acceptance/iframes/{config.PAYMOB_INTEGRATION_ID}?payment_token={token}"
-    
-    logger.info(f"Successfully created payment session. URL: {payment_url}")
-    return {
-        "payment_url": payment_url,
-        "public_key": os.environ.get("PAYMOB_PUBLIC_KEY")
-    }

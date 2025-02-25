@@ -34,42 +34,69 @@ def get_paymob_auth_token():
         return None  # Or raise an exception
 
 
-def create_paymob_order(amount, currency):
-    paymob_api_endpoint_url = "https://accept.paymob.com/api/ecommerce/orders"
+def create_paymob_order(amount, currency, billing_data=None, items=None):
+    paymob_api_endpoint_url = "https://accept.paymob.com/v1/intention/"
 
-    token = get_paymob_auth_token()  # Get the auth token
-    if not token:  # Check if token was obtained successfully
-        return {"error": "Failed to obtain Paymob authentication token"}  # Return error if auth fails
+    # Get Secret key from config
+    secret_key = config.PAYMOB_SECRET_KEY
 
     headers = {
-        "Authorization": f"Bearer {token}",  # Use "Bearer" + token in header
+        "Authorization": f"Token {secret_key}",
         "Content-Type": "application/json"
     }
 
-    merchant_order_id = str(uuid.uuid4())
-    current_timestamp = int(time.time())  # Generate current timestamp
-
-    request_body_data = {
-        "amount": amount,  # Amount in smallest currency unit (piasters for EGP)
-        "currency": currency,
-        "delivery_needed": False,  # Digital service, no delivery needed
-        "items": [
-            {
-                "name": "Test Item",
-                "amount": amount,
-                "description": "Test item description"
-            }
-        ],
-        "billing_data": {
+    # Use provided billing_data or default
+    if not billing_data:
+        billing_data = {
+            "email": "test@example.com",
             "first_name": "Test",
             "last_name": "User",
-            "email": "test@example.com",
-            "phone_number": "+201234567890",
-            "country": "EGY"  # Egypt country code
-        },
-        "payment_methods": ["card"],  # Specify payment method as "card"
-        "merchant_order_id": merchant_order_id,
-        "timestamp": current_timestamp  # Include timestamp in payload
+            "phone_number": "+201234567890"
+        }
+
+    # Use provided items or default
+    if not items:
+        items = [
+            {
+                "name": "CV Generation Service",
+                "amount": amount,
+                "description": "AI-Powered CV Generation",
+                "quantity": 1
+            }
+        ]
+
+    # Complete the billing data with required fields
+    complete_billing_data = {
+        "apartment": "sympl",
+        "street": "dumy",
+        "building": "dumy",
+        "city": "dumy",
+        "country": "EG",
+        "floor": "dumy",
+        "state": "dumy",
+        # Override with provided billing data
+        "email": billing_data.get("email", "test@example.com"),
+        "first_name": billing_data.get("first_name", "Test"),
+        "last_name": billing_data.get("last_name", "User"),
+        "phone_number": billing_data.get("phone_number", "+201234567890")
+    }
+
+    # Create customer data from billing data
+    customer = {
+        "first_name": billing_data.get("first_name", "Test"),
+        "last_name": billing_data.get("last_name", "User"),
+        "email": billing_data.get("email", "test@example.com"),
+        "extras": {}
+    }
+
+    request_body_data = {
+        "amount": amount,
+        "currency": currency,
+        "payment_methods": [1, 47],  # Card and ValU payment methods
+        "items": items,
+        "billing_data": complete_billing_data,
+        "customer": customer,
+        "extras": {}
     }
 
     try:
@@ -79,16 +106,21 @@ def create_paymob_order(amount, currency):
         logger.debug(f"  Request Body: {request_body_data}")  # Log request body for data verification
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-
+        
         logger.debug("Checking response status for errors...")  # Log before raise_for_status
         logger.debug(f"Paymob API Response Text (before JSON parsing): {response.text}")  # Log raw response text
         response.raise_for_status()
-
+        
         response_json = response.json()
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
 
-        return response_json
+        client_secret = response_json.get('client_secret')
+        if client_secret:
+            return {"client_secret": client_secret}  # Return client_secret in the response
+        else:
+            logger.error(f"Paymob API responded successfully, but 'client_secret' not found in response JSON. Response JSON: {response_json}")
+            return {"error": "Failed to retrieve client_secret from Paymob API response"}
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error during Paymob API call: {e}")
@@ -98,7 +130,7 @@ def create_paymob_order(amount, currency):
         return {"error": "Failed to create Paymob order"}
 
 def generate_payment_key(amount, currency, order_id):
-    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"
+    paymob_api_endpoint_url = "https://accept.paymob.com/api/acceptance/payment_keys"  
 
     token = get_paymob_auth_token()  # Get the auth token
     if not token:  # Check if token was obtained successfully
@@ -129,11 +161,11 @@ def generate_payment_key(amount, currency, order_id):
         logger.debug(f"  Request Body: {request_body_data}")  # Log request body for data verification
 
         response = requests.post(paymob_api_endpoint_url, headers=headers, json=request_body_data)
-
+        
         logger.debug("Checking response status for errors...")  # Log before raise_for_status
         logger.debug(f"Paymob API Response Text (before JSON parsing): {response.text}")  # Log raw response text
         response.raise_for_status()
-
+        
         response_json = response.json()
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
