@@ -46,7 +46,7 @@ def create_paymob_order(amount, currency, billing_data=None, items=None):
         "street": "dumy",
         "building": "dumy",
         "city": "dumy",
-        "country": "EG",
+        "country": "EGY",
         "floor": "dumy",
         "state": "dumy",
         # Override with provided billing data
@@ -71,7 +71,8 @@ def create_paymob_order(amount, currency, billing_data=None, items=None):
         "items": items,
         "billing_data": complete_billing_data,
         "customer": customer,
-        "extras": {}
+        "extras": {},
+        "integration_id": config.PAYMOB_INTEGRATION_ID
     }
 
     try:
