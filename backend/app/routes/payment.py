@@ -5,7 +5,7 @@ import logging
 import os
 import requests
 from app import config
-from ..services.payment_service import create_paymob_order, generate_payment_key
+from ..services.payment_service import create_paymob_order
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
