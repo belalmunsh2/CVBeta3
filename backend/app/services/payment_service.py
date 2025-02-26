@@ -67,7 +67,7 @@ def create_paymob_order(amount, currency, billing_data=None, items=None):
     request_body_data = {
         "amount": amount,
         "currency": currency,
-        "payment_methods": [1, 47],  # Card and ValU payment methods
+        "payment_methods": [4926084, 4912622],  # Card and ValU payment methods
         "items": items,
         "billing_data": complete_billing_data,
         "customer": customer,
