@@ -141,10 +141,11 @@ const handlePayNowClick = async () => {
     });
 
     if (response && response.client_secret) {
-      const publicKey = import.meta.env.VITE_PAYMOB_PUBLIC_KEY;
+      const publicKey = response.public_key;
       const clientSecret = response.client_secret;
+      const unifiedCheckoutBaseUrl = response.payment_url;
       
-      const unifiedCheckoutURL = `https://accept.paymob.com/unifiedcheckout/?publicKey=${publicKey}&clientSecret=${clientSecret}`;
+      const unifiedCheckoutURL = `${unifiedCheckoutBaseUrl}?publicKey=${publicKey}&clientSecret=${clientSecret}`;
       
       window.location.href = unifiedCheckoutURL;
     } else {

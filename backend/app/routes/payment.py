@@ -56,8 +56,11 @@ async def create_payment_session(payload: PaymentSessionRequest):
     # Return client_secret directly from the Intention API response
     if "client_secret" in order_response:
         logger.info(f"Successfully created payment intention with client_secret")
+        # Add public_key and payment_url to the response
         return {
-            "client_secret": order_response["client_secret"]
+            "client_secret": order_response["client_secret"],
+            "public_key": config.PAYMOB_PUBLIC_KEY,
+            "payment_url": "https://accept.paymob.com/unifiedcheckout/"
         }
     else:
         logger.error("Client secret not found in Paymob response")
