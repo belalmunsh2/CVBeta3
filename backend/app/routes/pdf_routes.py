@@ -7,6 +7,7 @@ import time
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import convert_html_to_pdf, generate_cv_html
+from ..config import PUBLIC_BASE_URL
 import io
 
 # Configure logging
@@ -25,7 +26,12 @@ async def get_download_url_route(cv_text_input: CVTextInput, request: Request) -
     user_text = cv_text_input.user_text
 
     download_token = str(uuid.uuid4())
-    temporary_url = str(request.base_url) + f"api/download-cv-pdf/{download_token}"  # Construct ABSOLUTE URL
+    
+    # Use PUBLIC_BASE_URL from config, or fallback to request.base_url if not available
+    public_base_url = PUBLIC_BASE_URL
+    temporary_url = public_base_url.rstrip("/") + f"/api/download-cv-pdf/{download_token}"
+    
+    logging.info(f"Generated temporary download URL: {temporary_url}")
 
     temporary_download_urls[download_token] = {
         "user_text": user_text,
