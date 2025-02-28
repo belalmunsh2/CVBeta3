@@ -118,6 +118,9 @@ const handlePayNowClick = async () => {
     isLoading.value = true;
     error.value = '';
 
+    // Store user text in localStorage for later use in DownloadReadyView
+    localStorage.setItem('cv_user_text', userText.value);
+
     const response = await createPaymentSession({
       amount: amount,
       billing_data: {
