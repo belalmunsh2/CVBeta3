@@ -13,7 +13,7 @@
         <button @click="handleGenerateClick" :disabled="isLoading">
           {{ isLoading ? 'Generating...' : 'Generate CV' }}
         </button>
-        <button @click="handleDownloadClick" :disabled="!cvContent || isLoading">
+        <button v-if="isDownloadButtonVisible" @click="handleDownloadClick" :disabled="isLoading">
           Download PDF
         </button>
       </div>
@@ -60,6 +60,7 @@ const isLoading = ref(false);
 const error = ref('');
 const currentAmount = ref(1001); // Base price in cents
 const discountedAmount = ref(null);
+const isDownloadButtonVisible = ref(false);
 
 const handleDiscountApplied = (discountData) => {
   console.log("Discount Applied in ServiceView:", discountData);
@@ -79,13 +80,16 @@ const handleGenerateClick = async () => {
 
   isLoading.value = true;
   error.value = '';
+  isDownloadButtonVisible.value = false;
 
   try {
     const response = await generateCV(userText.value);
     cvContent.value = response;
+    isDownloadButtonVisible.value = true;
   } catch (err) {
     error.value = 'Error generating CV. Please try again.';
     console.error('Error:', err);
+    isDownloadButtonVisible.value = false;
   } finally {
     isLoading.value = false;
   }
