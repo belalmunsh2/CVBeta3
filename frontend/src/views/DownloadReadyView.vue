@@ -1,45 +1,57 @@
 <template>
-  <div class="download-ready-page">
-    <h1>Thank you for your payment!</h1>
-    <p>Preparing your CV download, please wait...</p>
+  <div class="download-container">
+    <h2>Your CV is ready!</h2>
+    <button @click="downloadPDF">Download PDF</button>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { downloadCvPdf } from '../services/api';
+import { useRoute } from 'vue-router';
 
-const router = useRouter();
+const route = useRoute();
+const downloadToken = route.params.token;
 
-onMounted(async () => {
-  console.log("DownloadReadyView.vue - onMounted: Component mounted");
+const downloadPDF = async () => {
+  // **IMPORTANT: Make sure to replace this with your *actual* backend cloud URL if it's different!**
+  const backendURL = `https://cuddly-engine-pjwvppv46rqgf7q7j-8000.app.github.dev/api/download-cv-pdf/${downloadToken}`;
 
-  const userText = localStorage.getItem('cv_user_text');
-  console.log("DownloadReadyView.vue - onMounted: Retrieved userText from localStorage:", userText);
-
-  if (userText) {
-    console.log("DownloadReadyView.vue - onMounted: userText found, proceeding to download initiation");
-    try {
-      console.log("DownloadReadyView.vue - onMounted: Calling downloadCvPdf(userText)");
-      await downloadCvPdf(userText);
-      console.log("DownloadReadyView.vue - onMounted: downloadCvPdf call completed (redirection should have happened)");
-    } catch (error) {
-      console.error("DownloadReadyView.vue - onMounted: Error initiating download:", error);
-      // Optional: Handle error more visibly in the UI, e.g., display an error message
-      // or redirect back to service page with error query param
-      // router.push('/service?error=download_failed');
+  try {
+    const response = await fetch(backendURL);
+    if (!response.ok) {
+      console.error('HTTP error!', response.status);
+      throw new Error(`HTTP error! status: ${response.status}`); // Improved error handling
     }
-  } else {
-    console.error("DownloadReadyView.vue - onMounted: userText NOT found in localStorage. Download cannot be initiated.");
-    // Optional: Redirect user back to service page with error message
-    // router.push('/service?error=user_text_missing');
-  }
+    const blob = await response.blob();
 
-  console.log("DownloadReadyView.vue - onMounted: onMounted hook finished execution");
-});
+    // Create download link
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "generated_cv.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Failed to download PDF:", error);
+    // Consider showing an error message to the user in the template if needed.
+    alert("Failed to download PDF. Please try again later."); // Basic error alert for user
+  }
+};
 </script>
 
 <style scoped>
-/* You can add styling here later if needed */
+.download-container {
+  text-align: center;
+  margin-top: 50px;
+}
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #45a049;
+}
 </style>

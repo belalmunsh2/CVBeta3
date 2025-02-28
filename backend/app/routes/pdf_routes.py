@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any
 import logging
 import uuid
 import time
+import os
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import convert_html_to_pdf, generate_cv_html
@@ -11,25 +12,28 @@ from ..config import PUBLIC_BASE_URL
 import io
 
 # Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Dictionary to store temporary download URLs
+# Dictionary to store temporary download URLs with their expiry timestamps
 temporary_download_urls: Dict[str, Dict[str, Any]] = {}
+
+# Frontend base URL - Replace with your actual frontend URL
+FRONTEND_BASE_URL = "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev"
 
 @router.post("/api/get-download-url/")
 async def get_download_url_route(cv_text_input: CVTextInput, request: Request) -> Dict[str, str]:
     """
-    Endpoint to generate a temporary download URL for the CV PDF using absolute URL.
+    Endpoint to generate a temporary download URL for the CV PDF using frontend URL.
     """
     user_text = cv_text_input.user_text
 
     download_token = str(uuid.uuid4())
     
-    # Use PUBLIC_BASE_URL from config, or fallback to request.base_url if not available
-    public_base_url = PUBLIC_BASE_URL
-    temporary_url = public_base_url.rstrip("/") + f"/api/download-cv-pdf/{download_token}"
+    # Construct a frontend URL for the download page
+    temporary_url = f"{FRONTEND_BASE_URL.rstrip('/')}/download/{download_token}"
     
     logging.info(f"Generated temporary download URL: {temporary_url}")
 

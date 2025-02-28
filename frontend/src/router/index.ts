@@ -18,6 +18,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/download-ready',
     name: 'DownloadReady',
     component: DownloadReadyView
+  },
+  {
+    path: '/download/:token',
+    name: 'DownloadPDFPage',
+    component: DownloadReadyView
   }
 ];
 
