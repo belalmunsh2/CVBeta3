@@ -18,4 +18,4 @@ Now, please analyze the following text and produce the appropriate CV based on t
 
 
 # If you have other code in this file *below* the CV_SYSTEM_PROMPT definition, **keep that code as it is.**
-# We are only replacing the conflicting definition of CV_SYSTEM_PROMPT.
+# We are only replacing  the conflicting definition of CV_SYSTEM_PROMPT.

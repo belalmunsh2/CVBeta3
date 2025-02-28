@@ -35,6 +35,6 @@ export async function createPaymentSession(payload: any): Promise<any> {
         return response.data;
     } catch (error) {
         console.error("Error calling create-payment-session API:", error);
-        throw error; // Re-throw to handle in component
+        throw error; // Re-throw to handle in component 
     }
 };
