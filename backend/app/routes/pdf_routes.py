@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Response, HTTPException, StreamingResponse
-from fastapi.responses import PlainTextResponse
+from fastapi import APIRouter, Response, HTTPException
+from fastapi.responses import StreamingResponse, PlainTextResponse
 from typing import Optional
 import logging
 from app.models.schemas import CVTextInput
