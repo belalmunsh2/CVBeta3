@@ -17,15 +17,31 @@ export async function generateCV(userText: string): Promise<string> {
     }
 };
 
-export async function downloadCvPdf(payload: { user_text: string }): Promise<Blob> {
+export const getDownloadUrl = async (userText: string): Promise<string | null> => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/get-download-url/`, { user_text: userText });
+    return response.data.download_url as string; // Type assertion to string
+  } catch (error) {
+    console.error("Error fetching download URL:", error);
+    return null;
+  }
+};
+
+export async function downloadCvPdf(userText: string): Promise<void> {
     try {
-        const response = await axios.post(`${API_BASE_URL}/api/download-cv-pdf/`, payload, {
-            responseType: 'blob', // Important for handling binary data (PDF)
-        });
-        return response.data;
-    } catch (error) { 
-        console.error("Error calling download-cv-pdf API:", error);
-        throw error;
+        const downloadUrl = await getDownloadUrl(userText);
+        
+        if (downloadUrl) {
+            window.location.href = downloadUrl; // Redirect to download URL
+        } else {
+            console.error("Failed to get download URL from backend.");
+            // Optionally, throw an error to signal failure to calling component:
+            // throw new Error("Failed to get download URL.");
+        }
+    } catch (error) {
+        console.error("Error initiating PDF download:", error);
+        // Optionally, re-throw the error to propagate it:
+        // throw error;
     }
 };
 

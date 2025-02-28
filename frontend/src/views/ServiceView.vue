@@ -13,7 +13,7 @@
         <button @click="handleGenerateClick" :disabled="isLoading">
           {{ isLoading ? 'Generating...' : 'Generate CV' }}
         </button>
-        <button v-if="isDownloadButtonVisible" @click="handleDownloadClick" :disabled="isLoading">
+        <button v-if="false" @click="handleDownloadClick" :disabled="isLoading">
           Download PDF
         </button>
       </div>
@@ -97,15 +97,7 @@ const handleGenerateClick = async () => {
 
 const handleDownloadClick = async () => {
   try {
-    const pdfBlob = await downloadCvPdf({ user_text: userText.value });
-    const url = window.URL.createObjectURL(pdfBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'cv.pdf');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
+    await downloadCvPdf(userText.value);
   } catch (err) {
     console.error('Error downloading PDF:', err);
     error.value = 'Error downloading PDF. Please try again.';
