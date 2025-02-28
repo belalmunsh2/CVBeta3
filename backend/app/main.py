@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.generator import router as generator_router
 from app.routes.promo import router as promo_router
 from app.routes.payment import router as payment_router
+from app.routes.pdf_routes import router as pdf_router
 
 # Configure logging at DEBUG level
 logging.basicConfig(level=logging.DEBUG)
@@ -29,6 +30,7 @@ app.add_middleware(
 app.include_router(generator_router, prefix="/api", tags=["generator"])
 app.include_router(promo_router, prefix="/api", tags=["promo"])
 app.include_router(payment_router, prefix="/api", tags=["payment"])
+app.include_router(pdf_router, tags=["pdf"])
 
 @app.get("/")
 async def root():
