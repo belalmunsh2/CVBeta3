@@ -59,12 +59,16 @@ async def create_payment_session(payload: PaymentSessionRequest):
         logger.error(f"Failed to create Paymob order: {order_response['error']}")
         raise HTTPException(status_code=400, detail=order_response["error"])
     
-    # Extract order_id from order_response
+    # *** ENHANCED ERROR HANDLING START ***
+    logger.info(f"Paymob order_response just before order_id extraction: {order_response}")  # Log full response
+    
     order_id = order_response.get('intention_order_id')  # Get intention_order_id
     
     if not order_id:
         logger.error("Order ID not found in Paymob Intention API response.")
-        raise HTTPException(status_code=500, detail="Could not retrieve order ID from payment provider.")
+        # *** ENHANCED ERROR MESSAGE - INCLUDE order_response in detail ***
+        raise HTTPException(status_code=500, detail=f"Could not retrieve order ID from payment provider. Paymob Response: {order_response}")
+    # *** ENHANCED ERROR HANDLING END ***
     
     # Store download_token in temporary_download_urls using order_id as key
     if payload.user_text:
