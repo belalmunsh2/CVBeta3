@@ -91,12 +91,13 @@ def create_paymob_order(amount, currency, billing_data=None, items=None):
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
 
+        # Check if client_secret exists for logging purposes
         client_secret = response_json.get('client_secret')
-        if client_secret:
-            return {"client_secret": client_secret}  # Return client_secret in the response
-        else:
+        if not client_secret:
             logger.error(f"Paymob API responded successfully, but 'client_secret' not found in response JSON. Response JSON: {response_json}")
-            return {"error": "Failed to retrieve client_secret from Paymob API response"}
+        
+        # Return the full response_json instead of just the client_secret
+        return response_json
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error during Paymob API call: {e}")

@@ -79,17 +79,18 @@ async def create_payment_session(payload: PaymentSessionRequest):
         }
         logger.info(f"Stored user_text with download_token: {download_token} for order_id: {order_id}")
     
-    # Return client_secret directly from the Intention API response
-    if "client_secret" in order_response:
-        logger.info(f"Successfully created payment intention with client_secret for order_id: {order_id}")
-        # Add public_key and payment_url to the response
-        return {
-            "client_secret": order_response["client_secret"],
-            "public_key": config.PAYMOB_PUBLIC_KEY,
-            "payment_url": "https://accept.paymob.com/unifiedcheckout/",
-            "download_token": download_token,
-            "order_id": order_id  # Return order_id in response (might be useful for frontend debugging later)
-        }
-    else:
+    # Check if client_secret exists in the response
+    client_secret = order_response.get("client_secret")
+    if not client_secret:
         logger.error("Client secret not found in Paymob response")
         raise HTTPException(status_code=400, detail="Invalid response from payment provider")
+        
+    logger.info(f"Successfully created payment intention with client_secret for order_id: {order_id}")
+    # Add public_key and payment_url to the response
+    return {
+        "client_secret": client_secret,
+        "public_key": config.PAYMOB_PUBLIC_KEY,
+        "payment_url": "https://accept.paymob.com/unifiedcheckout/",
+        "download_token": download_token,
+        "order_id": order_id  # Return order_id in response (might be useful for frontend debugging later)
+    }
