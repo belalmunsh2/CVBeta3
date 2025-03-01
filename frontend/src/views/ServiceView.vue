@@ -123,6 +123,7 @@ const handlePayNowClick = async () => {
 
     const response = await createPaymentSession({
       amount: amount,
+      user_text: userText.value, // Pass user_text to backend
       billing_data: {
         email: testEmail,
         first_name: testFirstName,
@@ -144,9 +145,22 @@ const handlePayNowClick = async () => {
       const clientSecret = response.client_secret;
       const unifiedCheckoutBaseUrl = response.payment_url;
       
+      // Store download_token in localStorage if available
+      if (response.download_token) {
+        localStorage.setItem('download_token', response.download_token);
+        console.log("Download token stored in localStorage:", response.download_token);
+      }
+      
+      // Construct the payment URL with download_token as a query parameter
       const unifiedCheckoutURL = `${unifiedCheckoutBaseUrl}?publicKey=${publicKey}&clientSecret=${clientSecret}`;
       
-      window.location.href = unifiedCheckoutURL;
+      // Add download_token as a query parameter to the payment URL
+      // This will be passed back to our callback endpoint by Paymob
+      const finalCheckoutURL = response.download_token 
+        ? `${unifiedCheckoutURL}&download_token=${response.download_token}` 
+        : unifiedCheckoutURL;
+      
+      window.location.href = finalCheckoutURL;
     } else {
       error.value = 'Failed to initiate payment. Please try again.';
     }
