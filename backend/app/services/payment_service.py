@@ -87,6 +87,7 @@ def create_paymob_order(amount, currency, billing_data=None, items=None):
         response.raise_for_status()
         
         response_json = response.json()
+        logger.info(f"Paymob Intention API Full Response JSON: {response_json}")  
         logger.info(f"Paymob API Response Status Code: {response.status_code}")
         logger.debug(f"Paymob API Response JSON: {response_json}")
 
