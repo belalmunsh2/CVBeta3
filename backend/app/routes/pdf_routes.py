@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response, HTTPException, Request
-from fastapi.responses import StreamingResponse, PlainTextResponse
+from fastapi.responses import StreamingResponse, PlainTextResponse, RedirectResponse
 from typing import Optional, Dict, Any
 import logging
 import uuid
@@ -43,6 +43,25 @@ async def get_download_url_route(cv_text_input: CVTextInput, request: Request) -
     }
 
     return {"download_url": temporary_url}
+
+@router.get("/api/paymob-callback-intermediate")
+async def paymob_callback_intermediate_route(request: Request):
+    """
+    Intermediate callback route for Paymob to redirect to after successful payment.
+    This route will redirect the user to the frontend download page, passing the download token.
+    """
+    # **IMPORTANT: Token Retrieval - This is a placeholder!**
+    # **We need to figure out how to securely retrieve the correct download_token here.**
+    # **For now, let's *assume* we can somehow identify and retrieve the correct token.**
+    # **This is the CRITICAL part to solve next!**
+    download_token = "DUMMY_TOKEN_FOR_NOW"  # <--- Placeholder - Replace this with actual token retrieval logic!
+
+    # **IMPORTANT: Replace with your *actual* frontend base URL if different!**
+    frontend_download_url = f"{FRONTEND_BASE_URL.rstrip('/')}/download/{download_token}"
+
+    logging.info(f"Paymob callback received. Redirecting to frontend download URL: {frontend_download_url}")
+
+    return RedirectResponse(url=frontend_download_url, status_code=302)  # 302 Found is a common redirect status
 
 @router.get("/api/download-cv-pdf/{token}")
 async def download_cv_pdf_route(token: str) -> StreamingResponse:
