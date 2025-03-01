@@ -36,21 +36,12 @@ class PaymentSessionRequest(BaseModel):
 @router.post("/create-payment-session")
 async def create_payment_session(payload: PaymentSessionRequest):
     """
-    Creates a payment session with Paymob using the provided amount.
-    Amount should be in smallest currency unit (e.g., cents for USD, piasters for EGP)
+    Creates a payment session with Paymob and associates download token with order_id.
     """
     logger = logging.getLogger(__name__)
     
     # Generate download_token BEFORE payment session
     download_token = str(uuid.uuid4())
-    
-    # Store user_text in temporary_download_urls if provided
-    if payload.user_text:
-        temporary_download_urls[download_token] = {
-            "user_text": payload.user_text,
-            "expiry_timestamp": time.time() + 1800  # 30 minutes expiry
-        }
-        logger.info(f"Stored user_text with download_token: {download_token}")
     
     # Extract billing_data and items if provided
     billing_data = payload.billing_data.dict() if payload.billing_data else None
@@ -68,15 +59,32 @@ async def create_payment_session(payload: PaymentSessionRequest):
         logger.error(f"Failed to create Paymob order: {order_response['error']}")
         raise HTTPException(status_code=400, detail=order_response["error"])
     
+    # Extract order_id from order_response
+    order_id = order_response.get('intention_order_id')  # Get intention_order_id
+    
+    if not order_id:
+        logger.error("Order ID not found in Paymob Intention API response.")
+        raise HTTPException(status_code=500, detail="Could not retrieve order ID from payment provider.")
+    
+    # Store download_token in temporary_download_urls using order_id as key
+    if payload.user_text:
+        temporary_download_urls[str(order_id)] = {  # Use order_id as key (convert to string)
+            "user_text": payload.user_text,
+            "download_token": download_token,  # Store download_token in the data
+            "expiry_timestamp": time.time() + 1800  # 30 minutes expiry
+        }
+        logger.info(f"Stored user_text with download_token: {download_token} for order_id: {order_id}")
+    
     # Return client_secret directly from the Intention API response
     if "client_secret" in order_response:
-        logger.info(f"Successfully created payment intention with client_secret")
+        logger.info(f"Successfully created payment intention with client_secret for order_id: {order_id}")
         # Add public_key and payment_url to the response
         return {
             "client_secret": order_response["client_secret"],
             "public_key": config.PAYMOB_PUBLIC_KEY,
             "payment_url": "https://accept.paymob.com/unifiedcheckout/",
-            "download_token": download_token
+            "download_token": download_token,
+            "order_id": order_id  # Return order_id in response (might be useful for frontend debugging later)
         }
     else:
         logger.error("Client secret not found in Paymob response")

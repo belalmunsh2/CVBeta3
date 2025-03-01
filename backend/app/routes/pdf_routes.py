@@ -50,32 +50,37 @@ async def paymob_callback_intermediate_route(request: Request):
     Intermediate callback route for Paymob to redirect to after successful payment.
     This route will redirect the user to the frontend download page, passing the download token.
     """
-    # Get the download_token from the query parameters if available
-    # In a real implementation, you might need to extract other Paymob callback parameters
-    # and verify the payment status before proceeding
-    
-    # Log all query parameters for debugging
     query_params = dict(request.query_params)
     logging.info(f"Paymob callback received with query parameters: {query_params}")
     
-    # Try to get the download_token from query parameters
-    # If not available, we'll use a fallback mechanism or return an error
-    download_token = request.query_params.get("download_token")
+    # Extract order_id from query parameters
+    order_id_str = request.query_params.get('order')  # Get order_id from query params
+    
+    if not order_id_str:
+        logging.error("Order ID missing in Paymob callback query parameters.")
+        error_redirect_url = f"{FRONTEND_BASE_URL.rstrip('/')}/service?error=missing_order_id"  # Redirect with error
+        return RedirectResponse(url=error_redirect_url, status_code=302)
+    
+    # Retrieve download data from temporary_download_urls using order_id as key
+    download_data = temporary_download_urls.get(str(order_id_str))  # Use order_id as key
+    
+    if not download_data:
+        logging.error(f"No download data found for order_id: {order_id_str} in temporary_download_urls.")
+        error_redirect_url = f"{FRONTEND_BASE_URL.rstrip('/')}/service?error=missing_token"  # Redirect with error
+        return RedirectResponse(url=error_redirect_url, status_code=302)
+    
+    # Extract download_token from the download_data
+    download_token = download_data.get("download_token")
     
     if not download_token:
-        logging.error("No download_token found in Paymob callback query parameters")
-        # Redirect to an error page or the service page
-        return RedirectResponse(url=f"{FRONTEND_BASE_URL}/service?error=missing_token", status_code=302)
-    
-    # Check if the token exists in our temporary_download_urls
-    if download_token not in temporary_download_urls:
-        logging.error(f"Download token not found in temporary_download_urls: {download_token}")
-        return RedirectResponse(url=f"{FRONTEND_BASE_URL}/service?error=invalid_token", status_code=302)
+        logging.error(f"No download_token found in download_data for order_id: {order_id_str}")
+        error_redirect_url = f"{FRONTEND_BASE_URL.rstrip('/')}/service?error=missing_token"  # Redirect with error
+        return RedirectResponse(url=error_redirect_url, status_code=302)
     
     # Construct frontend download URL
     frontend_download_url = f"{FRONTEND_BASE_URL.rstrip('/')}/download/{download_token}"
     
-    logging.info(f"Paymob callback processed. Redirecting to frontend download URL: {frontend_download_url}")
+    logging.info(f"Successfully retrieved download_token for order_id: {order_id_str}. Redirecting to frontend download URL: {frontend_download_url}")
     
     return RedirectResponse(url=frontend_download_url, status_code=302)
 
@@ -84,18 +89,44 @@ async def download_cv_pdf_route(token: str) -> StreamingResponse:
     """
     Endpoint to download the generated CV as a PDF using a temporary token.
     """
-    if token not in temporary_download_urls:
-        raise HTTPException(status_code=400, detail="Invalid download link.")
-
-    download_data = temporary_download_urls[token]
-    expiry_timestamp = download_data["expiry_timestamp"]
-    if time.time() > expiry_timestamp:
-        raise HTTPException(status_code=400, detail="Download link expired.")
-
-    user_text = download_data["user_text"]
-
-    del temporary_download_urls[token]  # Invalidate token (one-time use)
-
+    # First, try to find the token directly in temporary_download_urls
+    # This handles the case where token is a download_token used as a key (old method)
+    if token in temporary_download_urls:
+        download_data = temporary_download_urls[token]
+        user_text = download_data.get("user_text")
+        expiry_timestamp = download_data.get("expiry_timestamp")
+        
+        if not user_text or not expiry_timestamp:
+            raise HTTPException(status_code=400, detail="Invalid download data format.")
+            
+        if time.time() > expiry_timestamp:
+            raise HTTPException(status_code=400, detail="Download link expired.")
+            
+        # Invalidate token (one-time use)
+        del temporary_download_urls[token]
+    else:
+        # If not found directly, search for the token in download_data values
+        # This handles the case where token is a download_token stored in order_id entry (new method)
+        found = False
+        for order_id, data in list(temporary_download_urls.items()):
+            if data.get("download_token") == token:
+                user_text = data.get("user_text")
+                expiry_timestamp = data.get("expiry_timestamp")
+                
+                if not user_text or not expiry_timestamp:
+                    raise HTTPException(status_code=400, detail="Invalid download data format.")
+                    
+                if time.time() > expiry_timestamp:
+                    raise HTTPException(status_code=400, detail="Download link expired.")
+                
+                # Invalidate token (one-time use)
+                del temporary_download_urls[order_id]
+                found = True
+                break
+                
+        if not found:
+            raise HTTPException(status_code=400, detail="Invalid download link.")
+            
     ai_cv_content = generate_cv_content_gemini(user_text)  # Re-generate AI content
     html_content = generate_cv_html(ai_cv_content)
     pdf_bytes = convert_html_to_pdf(html_content)
