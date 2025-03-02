@@ -1,6 +1,6 @@
 Write-Host "Starting to pull latest changes from origin/master..." -ForegroundColor Green
 
-# Git pull command to fetch and merge changes from remote 'origin' branch 'master'
+# Git pull  command to fetch and merge changes from  remote 'origin' branch 'master'
 git pull origin master
 
 Write-Host "Git pull completed." -ForegroundColor Green
