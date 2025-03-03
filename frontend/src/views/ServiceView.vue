@@ -1,50 +1,78 @@
 <template>
-  <div class="service-page">
-    <h1>CV Creator Service</h1>
-    
-    <div class="input-section">
-      <textarea
-        v-model="userText"
-        placeholder="Enter your experience, skills, and other relevant information..."
-        :disabled="isLoading"
-      ></textarea>
+  <div class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <h1 class="text-2xl sm:text-3xl font-bold text-primary-600 text-center mb-6">CV Creator Service</h1>
       
-      <div class="button-group">
-        <button @click="handleGenerateClick" :disabled="isLoading">
-          {{ isLoading ? 'Generating...' : 'Generate CV' }}
-        </button>
-        <button v-if="false" @click="handleDownloadClick" :disabled="isLoading">
-          Download PDF
-        </button>
+      <div class="bg-white rounded-xl shadow-soft p-4 sm:p-6 mb-6">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Enter your information</h2>
+        <textarea
+          v-model="userText"
+          placeholder="Enter your experience, skills, and other relevant information..."
+          :disabled="isLoading"
+          class="w-full min-h-[150px] sm:min-h-[200px] p-3 sm:p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-primary-500 transition duration-200 outline-none resize-y text-sm sm:text-base"
+        ></textarea>
+        
+        <div class="flex flex-col sm:flex-row gap-3 mt-4">
+          <button 
+            @click="handleGenerateClick" 
+            :disabled="isLoading" 
+            class="btn btn-primary py-2 sm:py-3 flex-1 text-sm sm:text-base"
+          >
+            <span v-if="isLoading" class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Generating...
+            </span>
+            <span v-else>Generate CV</span>
+          </button>
+          <button 
+            v-if="false" 
+            @click="handleDownloadClick" 
+            :disabled="isLoading" 
+            class="btn btn-secondary py-2 sm:py-3 flex-1 text-sm sm:text-base"
+          >
+            Download PDF
+          </button>
+        </div>
       </div>
-    </div>
 
-    <div v-if="error" class="error-message">
-      {{ error }}
-    </div>
-
-    <div v-if="cvContent" class="cv-preview">
-      <h2>Generated CV Content:</h2>
-      <div class="content">{{ cvContent }}</div>
-    </div>
-
-    <div class="payment-section" v-if="cvContent">
-      <h2>Complete Your Order</h2>
-      <div class="price-info">
-        <p>Base Price: ${{ (currentAmount / 100).toFixed(2) }}</p>
-      </div>
-
-      <PromoCode 
-        :amount="currentAmount" 
-        @discountApplied="handleDiscountApplied" 
-      />
-
-      <button 
-        @click="handlePayNowClick" 
-        class="pay-button"
+      <div 
+        v-if="error" 
+        class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm sm:text-base"
       >
-        Pay Now {{ discountedAmount ? `$${(finalAmount / 100).toFixed(2)}` : `$${(currentAmount / 100).toFixed(2)}` }}
-      </button>
+        {{ error }}
+      </div>
+
+      <div v-if="cvContent" class="bg-white rounded-xl shadow-soft p-4 sm:p-6 mb-6">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Generated CV Content:</h2>
+        <div class="bg-gray-50 rounded-lg p-3 sm:p-4 text-sm sm:text-base font-mono whitespace-pre-wrap">
+          {{ cvContent }}
+        </div>
+      </div>
+
+      <div v-if="cvContent" class="bg-white rounded-xl shadow-soft p-4 sm:p-6">
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Complete Your Order</h2>
+        <div class="text-base sm:text-lg font-medium text-gray-700 mb-6">
+          <p>Base Price: <span class="text-primary-600">${{ (currentAmount / 100).toFixed(2) }}</span></p>
+        </div>
+
+        <PromoCode 
+          :amount="currentAmount" 
+          @discountApplied="handleDiscountApplied" 
+        />
+
+        <button 
+          @click="handlePayNowClick" 
+          class="btn btn-primary w-full py-3 mt-6 text-sm sm:text-base flex items-center justify-center"
+        >
+          <span class="mr-2">Pay Now</span>
+          <span class="font-medium">
+            {{ discountedAmount ? `$${(finalAmount / 100).toFixed(2)}` : `$${(currentAmount / 100).toFixed(2)}` }}
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -171,100 +199,3 @@ const handlePayNowClick = async () => {
   }
 };
 </script>
-
-<style scoped>
-.service-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.input-section {
-  margin: 2rem 0;
-}
-
-textarea {
-  width: 100%;
-  min-height: 200px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  resize: vertical;
-}
-
-.button-group {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-button {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #4CAF50;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-button:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.error-message {
-  color: #ff0000;
-  margin: 1rem 0;
-  padding: 1rem;
-  background-color: #ffebee;
-  border-radius: 4px;
-}
-
-.cv-preview {
-  margin: 2rem 0;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.content {
-  white-space: pre-wrap;
-  font-family: monospace;
-  padding: 1rem;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-}
-
-.payment-section {
-  margin-top: 2rem;
-  padding: 2rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-}
-
-.price-info {
-  margin: 1rem 0;
-  font-size: 1.2rem;
-}
-
-.pay-button {
-  margin-top: 1rem;
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.2rem;
-  background-color: #2196F3;
-}
-
-.pay-button:hover:not(:disabled) {
-  background-color: #1976D2;
-}
-</style>
