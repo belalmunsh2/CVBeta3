@@ -115,15 +115,15 @@
           
           <div class="space-y-4">
             <!-- FAQ Item 1 -->
-            <Disclosure as="div" class="border border-gray-200 rounded-lg overflow-hidden">
-              {({ open }) => (
-                <>
+            <Disclosure as="div" class="border border-gray-200 rounded-lg overflow-hidden" v-for="(faq, index) in faqs" :key="index">
+              <template #default="{ open }">
+                <div>
                   <DisclosureButton class="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-50 hover:bg-gray-50 transition-colors duration-150">
                     <div class="flex items-center">
                       <div class="bg-primary-100 p-2 rounded-full mr-4">
                         <Icon name="question" size="20" stroke="#3498DB" customClass="text-primary-500" />
                       </div>
-                      <span class="text-lg font-semibold text-gray-800">How does the AI CV Generator work?</span>
+                      <span class="text-lg font-semibold text-gray-800">{{ faq.question }}</span>
                     </div>
                     <ChevronDownIcon :class="[
                       open ? 'transform rotate-180' : '',
@@ -136,98 +136,11 @@
                   </DisclosureButton>
                   <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
                     <div class="pl-12">
-                      <p class="leading-relaxed">Our AI analyzes your input and generates professional content tailored to your experience and industry standards.</p>
+                      <p class="leading-relaxed">{{ faq.answer }}</p>
                     </div>
                   </DisclosurePanel>
-                </>
-              )}
-            </Disclosure>
-            
-            <!-- FAQ Item 2 -->
-            <Disclosure as="div" class="border border-gray-200 rounded-lg overflow-hidden">
-              {({ open }) => (
-                <>
-                  <DisclosureButton class="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-50 hover:bg-gray-50 transition-colors duration-150">
-                    <div class="flex items-center">
-                      <div class="bg-primary-100 p-2 rounded-full mr-4">
-                        <Icon name="question" size="20" stroke="#3498DB" customClass="text-primary-500" />
-                      </div>
-                      <span class="text-lg font-semibold text-gray-800">Is my data secure?</span>
-                    </div>
-                    <ChevronDownIcon :class="[
-                      open ? 'transform rotate-180' : '',
-                      'w-5',
-                      'h-5',
-                      'text-primary-500',
-                      'transition-transform',
-                      'duration-200'
-                    ]" />
-                  </DisclosureButton>
-                  <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
-                    <div class="pl-12">
-                      <p class="leading-relaxed">Yes, we use encryption to protect your personal information and do not share your data with third parties.</p>
-                    </div>
-                  </DisclosurePanel>
-                </>
-              )}
-            </Disclosure>
-            
-            <!-- FAQ Item 3 -->
-            <Disclosure as="div" class="border border-gray-200 rounded-lg overflow-hidden">
-              {({ open }) => (
-                <>
-                  <DisclosureButton class="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-50 hover:bg-gray-50 transition-colors duration-150">
-                    <div class="flex items-center">
-                      <div class="bg-primary-100 p-2 rounded-full mr-4">
-                        <Icon name="question" size="20" stroke="#3498DB" customClass="text-primary-500" />
-                      </div>
-                      <span class="text-lg font-semibold text-gray-800">How much does it cost?</span>
-                    </div>
-                    <ChevronDownIcon :class="[
-                      open ? 'transform rotate-180' : '',
-                      'w-5',
-                      'h-5',
-                      'text-primary-500',
-                      'transition-transform',
-                      'duration-200'
-                    ]" />
-                  </DisclosureButton>
-                  <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
-                    <div class="pl-12">
-                      <p class="leading-relaxed">We offer both free and premium plans. The premium plan includes additional templates and advanced AI features.</p>
-                    </div>
-                  </DisclosurePanel>
-                </>
-              )}
-            </Disclosure>
-            
-            <!-- FAQ Item 4 -->
-            <Disclosure as="div" class="border border-gray-200 rounded-lg overflow-hidden">
-              {({ open }) => (
-                <>
-                  <DisclosureButton class="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-50 hover:bg-gray-50 transition-colors duration-150">
-                    <div class="flex items-center">
-                      <div class="bg-primary-100 p-2 rounded-full mr-4">
-                        <Icon name="question" size="20" stroke="#3498DB" customClass="text-primary-500" />
-                      </div>
-                      <span class="text-lg font-semibold text-gray-800">Can I download my CV as a PDF?</span>
-                    </div>
-                    <ChevronDownIcon :class="[
-                      open ? 'transform rotate-180' : '',
-                      'w-5',
-                      'h-5',
-                      'text-primary-500',
-                      'transition-transform',
-                      'duration-200'
-                    ]" />
-                  </DisclosureButton>
-                  <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
-                    <div class="pl-12">
-                      <p class="leading-relaxed">Yes, you can download your completed CV in PDF format, ready to send to employers.</p>
-                    </div>
-                  </DisclosurePanel>
-                </>
-              )}
+                </div>
+              </template>
             </Disclosure>
           </div>
         </div>
@@ -347,18 +260,46 @@
 </template>
 
 <script setup>
-import Icon from '../components/Icon.vue';
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
+import Icon from '../components/Icon.vue'
+import { ref } from 'vue';
 
-// Import a chevron icon for the accordion
+const IconName = ref('question');
+
 const ChevronDownIcon = {
-  props: ['class'],
-  template: `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="class">
-      <polyline points="6 9 12 15 18 9"></polyline>
+  template: `<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      class="w-5 h-5"
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+        clipRule="evenodd"
+      />
     </svg>
   `
-};
+ };
+
+const faqs = ref([
+  {
+    question: 'How does the AI CV Generator work?',
+    answer: 'Our AI analyzes your input and generates professional content tailored to your experience and industry standards.'
+  },
+  {
+    question: 'Is my data secure?',
+    answer: 'Yes, we use encryption to protect your personal information and do not share your data with third parties.'
+  },
+  {
+    question: 'How much does it cost?',
+    answer: 'We offer both free and premium plans. The premium plan includes additional templates and advanced AI features.'
+  },
+  {
+    question: 'Can I download my CV as a PDF?',
+    answer: 'Yes, you can download your completed CV in PDF format, ready to send to employers.'
+  }
+]);
 </script>
 
 <style>
