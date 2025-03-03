@@ -125,9 +125,14 @@
                       </div>
                       <span class="text-lg font-semibold text-gray-800">How does the AI CV Generator work?</span>
                     </div>
-                    <ChevronDownIcon class={`${
-                      open ? 'transform rotate-180' : ''
-                    } w-5 h-5 text-primary-500 transition-transform duration-200`} />
+                    <ChevronDownIcon :class="[
+                      open ? 'transform rotate-180' : '',
+                      'w-5',
+                      'h-5',
+                      'text-primary-500',
+                      'transition-transform',
+                      'duration-200'
+                    ]" />
                   </DisclosureButton>
                   <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
                     <div class="pl-12">
@@ -149,9 +154,14 @@
                       </div>
                       <span class="text-lg font-semibold text-gray-800">Is my data secure?</span>
                     </div>
-                    <ChevronDownIcon class={`${
-                      open ? 'transform rotate-180' : ''
-                    } w-5 h-5 text-primary-500 transition-transform duration-200`} />
+                    <ChevronDownIcon :class="[
+                      open ? 'transform rotate-180' : '',
+                      'w-5',
+                      'h-5',
+                      'text-primary-500',
+                      'transition-transform',
+                      'duration-200'
+                    ]" />
                   </DisclosureButton>
                   <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
                     <div class="pl-12">
@@ -173,9 +183,14 @@
                       </div>
                       <span class="text-lg font-semibold text-gray-800">How much does it cost?</span>
                     </div>
-                    <ChevronDownIcon class={`${
-                      open ? 'transform rotate-180' : ''
-                    } w-5 h-5 text-primary-500 transition-transform duration-200`} />
+                    <ChevronDownIcon :class="[
+                      open ? 'transform rotate-180' : '',
+                      'w-5',
+                      'h-5',
+                      'text-primary-500',
+                      'transition-transform',
+                      'duration-200'
+                    ]" />
                   </DisclosureButton>
                   <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
                     <div class="pl-12">
@@ -197,9 +212,14 @@
                       </div>
                       <span class="text-lg font-semibold text-gray-800">Can I download my CV as a PDF?</span>
                     </div>
-                    <ChevronDownIcon class={`${
-                      open ? 'transform rotate-180' : ''
-                    } w-5 h-5 text-primary-500 transition-transform duration-200`} />
+                    <ChevronDownIcon :class="[
+                      open ? 'transform rotate-180' : '',
+                      'w-5',
+                      'h-5',
+                      'text-primary-500',
+                      'transition-transform',
+                      'duration-200'
+                    ]" />
                   </DisclosureButton>
                   <DisclosurePanel class="px-6 pt-0 pb-4 text-gray-600 bg-gray-50 border-t border-gray-200 animate-fadeIn">
                     <div class="pl-12">
