@@ -1,12 +1,14 @@
 {
   "name": "cv-generator-frontend",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.7.23",
     "@vitejs/plugin-vue": "^4.6.2",
     "axios": "^0.27.2",
     "vue": "^3.4.15",
@@ -15,7 +17,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.9",
+    "tailwindcss": "^3.4.17",
     "vite": "^5.0.0"
   }
 }
