@@ -66,5 +66,97 @@ export default {
       }
     },
   },
-  plugins: [],
+  corePlugins: {
+    container: false
+  },
+  plugins: [
+    function({ addComponents }) {
+      addComponents({
+        '.container': {
+          maxWidth: '100%',
+          '@screen sm': {
+            maxWidth: '640px',
+          },
+          '@screen md': {
+            maxWidth: '768px',
+          },
+          '@screen lg': {
+            maxWidth: '1024px',
+          },
+          '@screen xl': {
+            maxWidth: '1280px',
+          },
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+        },
+        '.container-narrow': {
+          maxWidth: '100%',
+          '@screen sm': {
+            maxWidth: '640px',
+          },
+          '@screen md': {
+            maxWidth: '768px',
+          },
+          '@screen lg': {
+            maxWidth: '896px',
+          },
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '1rem',
+          paddingRight: '1rem',
+        },
+        '.btn': {
+          borderRadius: '0.5rem',
+          fontWeight: '500',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 150ms ease',
+          cursor: 'pointer',
+          '&:disabled': {
+            opacity: '0.65',
+            pointerEvents: 'none'
+          }
+        },
+        '.btn-primary': {
+          backgroundColor: '#3498DB',
+          color: 'white',
+          '&:hover': {
+            backgroundColor: '#2980B9'
+          },
+          '&:focus': {
+            boxShadow: '0 0 0 3px rgba(52, 152, 219, 0.5)'
+          }
+        },
+        '.btn-secondary': {
+          backgroundColor: '#E2E8F0',
+          color: '#475569',
+          '&:hover': {
+            backgroundColor: '#CBD5E1',
+            color: '#334155'
+          },
+          '&:focus': {
+            boxShadow: '0 0 0 3px rgba(226, 232, 240, 0.5)'
+          }
+        },
+        '.section': {
+          paddingTop: '4rem',
+          paddingBottom: '4rem',
+          '@screen md': {
+            paddingTop: '6rem',
+            paddingBottom: '6rem',
+          }
+        },
+        '.card': {
+          backgroundColor: 'white',
+          borderRadius: '0.75rem',
+          padding: '1.5rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02)',
+          transition: 'all 150ms ease',
+        }
+      })
+    }
+  ]
 }
