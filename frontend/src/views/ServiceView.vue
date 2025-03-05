@@ -1,22 +1,22 @@
 <template>
   <div class="bg-gray-50 min-h-screen">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-      <h1 class="text-2xl sm:text-3xl font-bold text-primary-600 text-center mb-6">CV Creator Service</h1>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <h1 class="text-2xl sm:text-3xl font-bold text-primary-600 text-center mb-8">CV Creator Service</h1>
       
-      <div class="bg-white rounded-xl shadow-soft p-4 sm:p-6 mb-6">
-        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Enter your information</h2>
+      <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 mb-8 transition-shadow duration-300 hover:shadow-md">
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Enter your information</h2>
         <textarea
           v-model="userText"
           placeholder="Enter your experience, skills, and other relevant information..."
           :disabled="isLoading"
-          class="w-full min-h-[150px] sm:min-h-[200px] p-3 sm:p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-primary-500 transition duration-200 outline-none resize-y text-sm sm:text-base"
+          class="w-full min-h-[200px] sm:min-h-[250px] p-4 sm:p-5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-primary-500 transition-all duration-200 outline-none resize-y text-sm sm:text-base shadow-inner bg-gray-50"
         ></textarea>
         
-        <div class="flex flex-col sm:flex-row gap-3 mt-4">
+        <div class="flex flex-col sm:flex-row gap-4 mt-5">
           <button 
             @click="handleGenerateClick" 
             :disabled="isLoading" 
-            class="btn btn-primary py-2 sm:py-3 flex-1 text-sm sm:text-base"
+            class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 text-white font-medium rounded-lg px-6 py-3 sm:py-4 flex-1 text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             <span v-if="isLoading" class="flex items-center justify-center">
               <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@
             v-if="false" 
             @click="handleDownloadClick" 
             :disabled="isLoading" 
-            class="btn btn-secondary py-2 sm:py-3 flex-1 text-sm sm:text-base"
+            class="border border-primary-600 bg-white hover:bg-gray-50 text-primary-600 font-medium rounded-lg px-6 py-3 sm:py-4 flex-1 text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             Download PDF
           </button>
@@ -40,22 +40,27 @@
 
       <div 
         v-if="error" 
-        class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm sm:text-base"
+        class="bg-red-50 text-red-700 p-5 rounded-lg mb-8 text-sm sm:text-base border border-red-100 shadow-sm"
       >
-        {{ error }}
+        <div class="flex items-start">
+          <svg class="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+          <span>{{ error }}</span>
+        </div>
       </div>
 
-      <div v-if="cvContent" class="bg-white rounded-xl shadow-soft p-4 sm:p-6 mb-6">
-        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Generated CV Content:</h2>
-        <div class="bg-gray-50 rounded-lg p-3 sm:p-4 text-sm sm:text-base font-mono whitespace-pre-wrap">
+      <div v-if="cvContent" class="bg-white rounded-xl shadow-sm p-6 sm:p-8 mb-8 transition-shadow duration-300 hover:shadow-md">
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Generated CV Content:</h2>
+        <div class="bg-gray-50 rounded-lg p-5 sm:p-6 text-sm sm:text-base font-mono whitespace-pre-wrap border border-gray-200 shadow-inner">
           {{ cvContent }}
         </div>
       </div>
 
-      <div v-if="cvContent" class="bg-white rounded-xl shadow-soft p-4 sm:p-6">
-        <h2 class="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Complete Your Order</h2>
+      <div v-if="cvContent" class="bg-white rounded-xl shadow-sm p-6 sm:p-8 transition-shadow duration-300 hover:shadow-md">
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Complete Your Order</h2>
         <div class="text-base sm:text-lg font-medium text-gray-700 mb-6">
-          <p>Base Price: <span class="text-primary-600">${{ (currentAmount / 100).toFixed(2) }}</span></p>
+          <p>Base Price: <span class="text-primary-600 font-semibold">${{ (currentAmount / 100).toFixed(2) }}</span></p>
         </div>
 
         <PromoCode 
@@ -65,10 +70,10 @@
 
         <button 
           @click="handlePayNowClick" 
-          class="btn btn-primary w-full py-3 mt-6 text-sm sm:text-base flex items-center justify-center"
+          class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 text-white font-medium rounded-lg px-6 py-4 w-full mt-8 text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <span class="mr-2">Pay Now</span>
-          <span class="font-medium">
+          <span class="font-semibold">
             {{ discountedAmount ? `$${(finalAmount / 100).toFixed(2)}` : `$${(currentAmount / 100).toFixed(2)}` }}
           </span>
         </button>
