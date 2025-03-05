@@ -27,7 +27,7 @@ export const getDownloadUrl = async (userText: string): Promise<string | null> =
   }
 };
 
-export async function downloadCvPdf(userText: string): Promise<void> {
+export async function downloadCvPdf(userText: string, downloadToken?: string): Promise<void> {
     try {
         const downloadUrl = await getDownloadUrl(userText);
         
