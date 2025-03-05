@@ -69,12 +69,12 @@
         <div class="flex flex-col items-center justify-center">
           <button 
             @click="downloadCV" 
-            class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 text-white font-medium rounded-lg px-8 py-4 mb-4 text-base transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 w-full sm:w-auto"
+            class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 text-white font-medium rounded-lg px-8 py-4 mb-4 text-base transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 w-full sm:w-auto download-btn"
           >
             <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
             </svg>
-            Download Your CV
+            <span>Download Your CV</span>
           </button>
           
           <router-link 
@@ -181,10 +181,27 @@ const downloadCV = async () => {
   }
   
   try {
+    // Update button state to show loading
+    const downloadButton = document.querySelector('.download-btn');
+    if (downloadButton) {
+      downloadButton.setAttribute('disabled', 'true');
+      downloadButton.querySelector('span').textContent = 'Downloading...';
+    }
+    
     await downloadCvPdf(userText, downloadToken.value);
+    
+    // Track download success (can be used for analytics)
+    console.log('CV download initiated successfully');
   } catch (err) {
     console.error('Error downloading PDF:', err);
     alert('Error downloading your CV. Please try again.');
+  } finally {
+    // Reset button state
+    const downloadButton = document.querySelector('.download-btn');
+    if (downloadButton) {
+      downloadButton.removeAttribute('disabled');
+      downloadButton.querySelector('span').textContent = 'Download Your CV';
+    }
   }
 };
 </script>
