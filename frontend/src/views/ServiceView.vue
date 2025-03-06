@@ -4,38 +4,10 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-primary-600 text-center mb-8">CV Creator Service</h1>
       
       <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 mb-8 transition-shadow duration-300 hover:shadow-md">
-        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Enter your information</h2>
-        <textarea
-          v-model="userText"
-          placeholder="Enter your experience, skills, and other relevant information..."
-          :disabled="isLoading"
-          class="w-full min-h-[200px] sm:min-h-[250px] p-4 sm:p-5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-primary-500 transition-all duration-200 outline-none resize-y text-sm sm:text-base shadow-inner bg-gray-50"
-        ></textarea>
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Create Your CV</h2>
         
-        <div class="flex flex-col sm:flex-row gap-4 mt-5">
-          <button 
-            @click="handleGenerateClick" 
-            :disabled="isLoading" 
-            class="bg-primary-600 hover:bg-primary-700 focus:ring-primary-500 text-white font-medium rounded-lg px-6 py-3 sm:py-4 flex-1 text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            <span v-if="isLoading" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Generating...
-            </span>
-            <span v-else>Generate CV</span>
-          </button>
-          <button 
-            v-if="false" 
-            @click="handleDownloadClick" 
-            :disabled="isLoading" 
-            class="border border-primary-600 bg-white hover:bg-gray-50 text-primary-600 font-medium rounded-lg px-6 py-3 sm:py-4 flex-1 text-sm sm:text-base transition-all duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            Download PDF
-          </button>
-        </div>
+        <!-- CV Form Component -->
+        <CVForm @cv-submit="handleFormSubmit" />
       </div>
 
       <div 
@@ -83,17 +55,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { generateCV, downloadCvPdf, createPaymentSession } from '../services/api';
 import PromoCode from '../components/PromoCode.vue';
+import CVForm from '../components/CVForm.vue';
 
 const userText = ref('');
+const userData = ref(null);
 const cvContent = ref('');
 const isLoading = ref(false);
 const error = ref('');
 const currentAmount = ref(1001); // Base price in cents
 const discountedAmount = ref(null);
 const isDownloadButtonVisible = ref(false);
+
+// Listen for the cv-submit event from the CVForm component
+onMounted(() => {
+  document.addEventListener('cv-submit', (event) => {
+    const { userData: formData, formattedText } = event.detail;
+    userData.value = formData;
+    userText.value = formattedText;
+    handleGenerateClick();
+  });
+});
 
 const handleDiscountApplied = (discountData) => {
   console.log("Discount Applied in ServiceView:", discountData);
@@ -105,9 +89,16 @@ const finalAmount = computed(() => {
   return discountedAmount.value || currentAmount.value;
 });
 
+// Handle form submission from the CVForm component
+const handleFormSubmit = (data) => {
+  userData.value = data.userData;
+  userText.value = data.formattedText;
+  handleGenerateClick();
+};
+
 const handleGenerateClick = async () => {
   if (!userText.value) {
-    error.value = 'Please enter some text about your experience and skills.';
+    error.value = 'Please complete the CV form with your information.';
     return;
   }
 
@@ -141,9 +132,9 @@ let testPaymentCounter = 0;
 
 const handlePayNowClick = async () => {
   testPaymentCounter++;
-  const testEmail = 'test' + testPaymentCounter + '@example.com';
-  const testFirstName = 'Test' + testPaymentCounter;
-  const testLastName = 'User' + testPaymentCounter;
+  const testEmail = userData.value?.email || 'test' + testPaymentCounter + '@example.com';
+  const testFirstName = userData.value?.firstName || 'Test' + testPaymentCounter;
+  const testLastName = userData.value?.lastName || 'User' + testPaymentCounter;
   const itemDescription = 'AI-Powered CV Generation Test ' + testPaymentCounter;
   const amount = finalAmount.value; // Amount in cents
 
@@ -153,6 +144,11 @@ const handlePayNowClick = async () => {
 
     // Store user text in localStorage for later use in DownloadReadyView
     localStorage.setItem('cv_user_text', userText.value);
+    
+    // Store structured user data if available
+    if (userData.value) {
+      localStorage.setItem('cv_user_data', JSON.stringify(userData.value));
+    }
 
     const response = await createPaymentSession({
       amount: amount,
@@ -161,7 +157,7 @@ const handlePayNowClick = async () => {
         email: testEmail,
         first_name: testFirstName,
         last_name: testLastName,
-        phone_number: "+201234567890",
+        phone_number: userData.value?.phone || "+201234567890",
         country: "EGY"
       },
       items: [
@@ -199,6 +195,7 @@ const handlePayNowClick = async () => {
     }
   } catch (e) {
     error.value = 'Payment initiation failed. Please check your connection and try again.';
+    console.error('Payment Error:', e);
   } finally {
     isLoading.value = false;
   }
