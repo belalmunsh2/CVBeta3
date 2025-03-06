@@ -150,6 +150,12 @@ const handlePayNowClick = async () => {
       localStorage.setItem('cv_user_data', JSON.stringify(userData.value));
     }
 
+    // Check internet connection before making the request
+    if (!navigator.onLine) {
+      error.value = 'You appear to be offline. Please check your internet connection and try again.';
+      return;
+    }
+
     const response = await createPaymentSession({
       amount: amount,
       user_text: userText.value, // Pass user_text to backend
@@ -191,10 +197,19 @@ const handlePayNowClick = async () => {
       
       window.location.href = finalCheckoutURL;
     } else {
-      error.value = 'Failed to initiate payment. Please try again.';
+      error.value = 'Failed to initiate payment. Please try again later.';
     }
   } catch (e) {
-    error.value = 'Payment initiation failed. Please check your connection and try again.';
+    if (e.response && e.response.data && e.response.data.detail) {
+      // Display the specific error message from the backend if available
+      error.value = `Payment error: ${e.response.data.detail}`;
+      
+      if (e.response.data.detail.includes('Failed to connect to Paymob')) {
+        error.value = 'Payment service is currently unavailable. Please try again later or contact support.';
+      }
+    } else {
+      error.value = 'Payment initiation failed. Please check your connection and try again.';
+    }
     console.error('Payment Error:', e);
   } finally {
     isLoading.value = false;
