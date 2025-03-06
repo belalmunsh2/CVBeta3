@@ -144,7 +144,6 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { downloadCvPdf } from '../services/api';
-import '../utils/globals.js'; // Import globals first to ensure browser variables are available
 
 // Get the route object to access URL parameters
 const route = useRoute();
@@ -153,19 +152,27 @@ const paymentAmount = ref(1000); // Default amount in cents
 const downloadToken = ref('');
 
 onMounted(() => {
-  // Get payment amount and download token from query params or localStorage
-  if (route.query.amount) {
-    paymentAmount.value = parseInt(route.query.amount);
-  }
-  
+  // Get the download token from the URL parameter
   if (route.query.download_token) {
-    downloadToken.value = route.query.download_token;
+    downloadToken.value = route.query.download_token.toString();
   } else {
-    // Try to get from localStorage as fallback
+    // Try to get it from localStorage as a fallback
     const storedToken = localStorage.getItem('download_token');
     if (storedToken) {
       downloadToken.value = storedToken;
     }
+  }
+  
+  // Get the amount from the URL parameter
+  if (route.query.amount) {
+    paymentAmount.value = parseInt(route.query.amount.toString(), 10);
+  }
+  
+  // Get the transaction ID from the URL parameter
+  if (route.query.transaction_id) {
+    transactionId.value = route.query.transaction_id.toString();
+  } else if (route.query.id) {
+    transactionId.value = 'TXN' + route.query.id.toString();
   }
 });
 
@@ -190,10 +197,37 @@ const downloadCV = async () => {
       downloadButton.querySelector('span').textContent = 'Downloading...';
     }
     
-    await downloadCvPdf(userText, downloadToken.value);
-    
-    // Track download success (can be used for analytics)
-    console.log('CV download initiated successfully');
+    // Use direct approach without relying on external browser detection
+    try {
+      const response = await fetch('/api/get-download-url/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_text: userText,
+          download_token: downloadToken.value
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data && data.download_url) {
+        // Redirect to the download URL
+        window.location.href = data.download_url;
+        console.log('CV download initiated successfully');
+      } else {
+        throw new Error('No download URL received from server');
+      }
+    } catch (downloadErr) {
+      // Fallback to the original method if the direct approach fails
+      console.log('Falling back to original download method');
+      await downloadCvPdf(userText, downloadToken.value);
+    }
   } catch (err) {
     console.error('Error downloading PDF:', err);
     alert('Error downloading your CV. Please try again.');
