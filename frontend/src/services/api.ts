@@ -23,7 +23,7 @@ export async function generateCV(userText: string): Promise<string> {
 
 export async function getDownloadUrl(userText: string, downloadToken?: string): Promise<string | null> {
   try {
-    const payload = { 
+    const payload = {
       user_text: userText,
       ...(downloadToken && { download_token: downloadToken })
     };
@@ -42,6 +42,14 @@ export async function getDownloadUrl(userText: string, downloadToken?: string): 
   }
 };
 
+/**
+ * Initiates the download of a CV PDF file by obtaining a download URL from the server
+ * and redirecting the browser to that URL.
+ * This implementation is independent of browser detection utilities.
+ * 
+ * @param userText - The user's CV text content
+ * @param downloadToken - Optional token for authentication
+ */
 export async function downloadCvPdf(userText: string, downloadToken?: string): Promise<void> {
     try {
         if (!userText || userText.trim().length === 0) {
@@ -53,15 +61,15 @@ export async function downloadCvPdf(userText: string, downloadToken?: string): P
         
         if (downloadUrl) {
             console.log("Redirecting to download URL");
-            window.location.href = downloadUrl; // Redirect to download URL
+            // Simple redirect that works in all browsers without dependencies
+            window.location.href = downloadUrl;
         } else {
             console.error("Failed to get download URL from backend.");
             throw new Error("Failed to get download URL from the server.");
         }
     } catch (error) {
         console.error("Error initiating PDF download:", error);
-        // Optionally, re-throw the error to propagate it:
-        // throw error;
+        alert("There was a problem downloading your CV. Please try again.");
     }
 };
 
