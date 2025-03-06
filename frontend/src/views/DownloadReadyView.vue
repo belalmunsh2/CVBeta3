@@ -153,8 +153,8 @@ const downloadToken = ref('');
 
 onMounted(() => {
   // Get the download token from the URL parameter
-  if (route.query.download_token) {
-    downloadToken.value = route.query.download_token.toString();
+  if (route.params.token) {
+    downloadToken.value = route.params.token.toString();
   } else {
     // Try to get it from localStorage as a fallback
     const storedToken = localStorage.getItem('download_token');
@@ -197,36 +197,28 @@ const downloadCV = async () => {
       downloadButton.querySelector('span').textContent = 'Downloading...';
     }
     
-    // Use direct approach without relying on external browser detection
     try {
-      const response = await fetch('/api/get-download-url/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_text: userText,
-          download_token: downloadToken.value
-        }),
+      const response = await fetch(`/api/download-cv-pdf/${downloadToken.value}`, {
+        method: 'GET',
       });
-      
+
       if (!response.ok) {
         throw new Error(`Server responded with ${response.status}`);
       }
-      
-      const data = await response.json();
-      
-      if (data && data.download_url) {
-        // Redirect to the download URL
-        window.location.href = data.download_url;
-        console.log('CV download initiated successfully');
-      } else {
-        throw new Error('No download URL received from server');
-      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cv_${downloadToken.value.substring(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      console.log('CV download initiated successfully (direct fetch)');
     } catch (downloadErr) {
-      // Fallback to the original method if the direct approach fails
-      console.log('Falling back to original download method');
-      await downloadCvPdf(userText, downloadToken.value);
+      console.log('Direct download failed, falling back to original method');
+      await downloadCvPdf(userText, downloadToken.value); // Keep fallback for now
     }
   } catch (err) {
     console.error('Error downloading PDF:', err);

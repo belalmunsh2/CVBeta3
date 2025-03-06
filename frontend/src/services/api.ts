@@ -55,18 +55,29 @@ export async function downloadCvPdf(userText: string, downloadToken?: string): P
         if (!userText || userText.trim().length === 0) {
             throw new Error("User text is required for download");
         }
-        
+
         console.log("Initiating download with token:", downloadToken ? "Present" : "Not present");
-        const downloadUrl = await getDownloadUrl(userText, downloadToken);
-        
-        if (downloadUrl) {
-            console.log("Redirecting to download URL");
-            // Simple redirect that works in all browsers without dependencies
-            window.location.href = downloadUrl;
-        } else {
-            console.error("Failed to get download URL from backend.");
-            throw new Error("Failed to get download URL from the server.");
+
+        const response = await fetch(`/api/download-cv-pdf/${downloadToken}`, {
+            method: 'GET',
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}`);
         }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cv_${downloadToken?.substring(0, 8) || 'cv'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        console.log('CV download initiated successfully (downloadCvPdf)');
+
     } catch (error) {
         console.error("Error initiating PDF download:", error);
         alert("There was a problem downloading your CV. Please try again.");
