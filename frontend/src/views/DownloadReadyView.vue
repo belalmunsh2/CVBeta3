@@ -144,7 +144,9 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { downloadCvPdf } from '../services/api';
+import '../utils/browserDetection.js'; // Import browser detection utilities
 
+// Get the route object to access URL parameters
 const route = useRoute();
 const transactionId = ref('TXN' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'));
 const paymentAmount = ref(1000); // Default amount in cents
