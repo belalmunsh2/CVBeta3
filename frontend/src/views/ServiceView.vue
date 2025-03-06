@@ -58,7 +58,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { generateCV, downloadCvPdf, createPaymentSession } from '../services/api';
 import PromoCode from '../components/PromoCode.vue';
-import CVForm from '../components/CVForm.vue';
+import CVForm from '../components/CvForm.vue';
 
 const userText = ref('');
 const userData = ref(null);
