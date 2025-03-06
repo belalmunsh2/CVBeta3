@@ -158,6 +158,17 @@ async def download_cv_pdf_route(token: str) -> StreamingResponse:
         
         if pdf_bytes:
             logging.info(f"Successfully generated PDF for token {token}, size: {len(pdf_bytes)} bytes")
+
+            # --- START: Temporary SAVE PDF TO DISK for debugging ---
+            try:
+                filepath = f"/tmp/cv_download_{token[:8]}.pdf" # Choose /tmp directory for saving
+                with open(filepath, 'wb') as f:
+                    f.write(pdf_bytes)
+                logging.info(f"Saved PDF to disk for debugging: {filepath}") # Log the saved filepath
+            except Exception as e:
+                logging.error(f"Error saving PDF to disk: {e}")
+            # --- END: Temporary SAVE PDF TO DISK for debugging ---
+
             return StreamingResponse(
                 io.BytesIO(pdf_bytes),
                 media_type="application/pdf",
@@ -177,16 +188,41 @@ async def download_cv_pdf_direct_route(cv_text_input: CVTextInput) -> StreamingR
     Endpoint to download the generated CV as a PDF.
     This is the original direct download route, kept for backward compatibility.
     """
-    user_text = cv_text_input.user_text
-    ai_cv_content = generate_cv_content_gemini(user_text)  # Re-generate AI content
-    html_content = generate_cv_html(ai_cv_content)  # Use generate_cv_html from pdf_service.py
-    pdf_bytes = convert_html_to_pdf(html_content)  # Use convert_html_to_pdf from pdf_service.py
+    try:
+        user_text = cv_text_input.user_text
+        logging.info("Starting direct PDF generation")
+        
+        ai_cv_content = generate_cv_content_gemini(user_text)
+        logging.info("AI content generated successfully for direct download")
+        
+        html_content = generate_cv_html(ai_cv_content)
+        logging.info("HTML content generated successfully for direct download")
+        
+        pdf_bytes = convert_html_to_pdf(html_content)
+        logging.info(f"PDF conversion completed for direct download, size: {len(pdf_bytes) if pdf_bytes else 'None'} bytes")
 
-    if pdf_bytes:
-        return StreamingResponse(
-            io.BytesIO(pdf_bytes),
-            media_type="application/pdf",
-            headers={"Content-Disposition": "attachment;filename=cv.pdf"}
-        )
-    else:
-        raise HTTPException(status_code=500, detail="PDF generation failed")
+        if pdf_bytes:
+            # Generate a random identifier for debugging purposes
+            debug_id = str(uuid.uuid4())[:8]
+            
+            # --- START: Temporary SAVE PDF TO DISK for debugging ---
+            try:
+                filepath = f"/tmp/cv_download_direct_{debug_id}.pdf"
+                with open(filepath, 'wb') as f:
+                    f.write(pdf_bytes)
+                logging.info(f"Saved direct download PDF to disk for debugging: {filepath}")
+            except Exception as e:
+                logging.error(f"Error saving direct download PDF to disk: {e}")
+            # --- END: Temporary SAVE PDF TO DISK for debugging ---
+            
+            return StreamingResponse(
+                io.BytesIO(pdf_bytes),
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"attachment;filename=cv_{debug_id}.pdf"}
+            )
+        else:
+            logging.error("PDF generation failed for direct download - pdf_bytes is empty or None")
+            raise HTTPException(status_code=500, detail="PDF generation failed - no bytes returned")
+    except Exception as e:
+        logging.exception(f"Error in direct PDF download: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
