@@ -144,7 +144,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { downloadCvPdf } from '../services/api';
-import '../utils/browserDetection.js'; // Import browser detection utilities
+import '../utils/globals.js'; // Import globals first to ensure browser variables are available
 
 // Get the route object to access URL parameters
 const route = useRoute();

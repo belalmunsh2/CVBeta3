@@ -2,10 +2,13 @@
  * Browser detection utility for cross-browser compatibility
  */
 
-// Export browser detection variables for global use
+// Define browser detection variables first
 export let browser = null;
 export let crossbrowserName = null;
-export let REMOTE_CONFIG_KEYS = {};
+export let REMOTE_CONFIG_KEYS = {
+  ENABLE_DOWNLOAD: 'enable_download',
+  DEBUG_MODE: 'debug_mode'
+};
 export let webextApi = {};
 
 /**
@@ -58,25 +61,19 @@ export function determineBrowser() {
  */
 export function initBrowserVariables() {
   determineBrowser();
-  
-  // Set up remote config keys (can be expanded as needed)
-  REMOTE_CONFIG_KEYS = {
-    ENABLE_DOWNLOAD: 'enable_download',
-    DEBUG_MODE: 'debug_mode'
-  };
-  
-  // Set up web extension API compatibility layer
-  webextApi = {
-    // Add any browser-specific extension APIs here if needed
-    download: (options) => {
-      console.log('Download requested:', options);
-      // Implement browser-specific download behavior if needed
-    }
-  };
 }
 
-// Run initialization on import
+// Run initialization immediately
 initBrowserVariables();
+
+// Define a global window.browser and related variables to support legacy code
+// This ensures variables are available globally across scripts
+if (typeof window !== 'undefined') {
+  window.browser = browser;
+  window.crossbrowserName = crossbrowserName;
+  window.REMOTE_CONFIG_KEYS = REMOTE_CONFIG_KEYS;
+  window.webextApi = webextApi;
+}
 
 export default {
   browser,
