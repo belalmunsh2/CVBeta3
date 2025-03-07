@@ -400,3 +400,13 @@ async def download_cv_pdf_direct_route(cv_text_input: CVTextInput) -> StreamingR
     except Exception as e:
         logging.exception(f"Error in direct PDF download: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+# Add a new route that matches the frontend redirect URL structure
+@router.get("/download/{token}")
+async def download_cv_frontend_route(token: str, request: Request):
+    """
+    Frontend-friendly download route that matches the URL structure used in the Paymob callback.
+    This route simply forwards the request to the main download_cv_pdf_route.
+    """
+    logging.info(f"Frontend download route hit with token: {token[:8]}...")
+    return await download_cv_pdf_route(token, request)
