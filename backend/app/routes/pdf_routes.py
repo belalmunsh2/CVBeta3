@@ -263,7 +263,7 @@ async def download_cv_pdf_debug_route(token: str, request: Request):
         pdf_hash = hashlib.md5(pdf_bytes).hexdigest()
         logging.info(f"PDF MD5 hash before streaming: {pdf_hash}")
         
-        # Create a fresh BytesIO object from the bytes
+        # Create a fresh BytesIO object from the by tes  
         pdf_stream = io.BytesIO(pdf_bytes)
         
         # Set explicit and comprehensive headers
