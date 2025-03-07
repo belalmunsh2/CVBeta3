@@ -87,79 +87,56 @@ async def paymob_callback_intermediate_route(request: Request):
     return RedirectResponse(url=frontend_download_url, status_code=302)
 
 @router.get("/api/download-cv-pdf/{token}")
-async def download_cv_pdf_route(token: str) -> StreamingResponse:
+async def download_cv_pdf_route(token: str, request: Request, response_class=StreamingResponse):
     """
-    Endpoint to download the generated CV as a PDF using a temporary token.
+    Endpoint to download the generated CV as a PDF.
+    This is the streamed download route for pre-generated CVs.
     """
-    # *** ENHANCED LOGGING START - Route hit and token received ***
-    logging.info(f"Endpoint /api/download-cv-pdf/{token} hit with token: {token}")
+    logging.info(f"ENTRY: download_cv_pdf_route called with token: {token[:8]}...")
     
-    # First, try to find the token directly in temporary_download_urls
-    # This handles the case where token is a download_token used as a key (old method)
+    # First check if the token exists directly
+    user_text = None
     if token in temporary_download_urls:
-        logging.info(f"Token {token} found directly in temporary_download_urls")
-        download_data = temporary_download_urls[token]
-        user_text = download_data.get("user_text")
-        expiry_timestamp = download_data.get("expiry_timestamp")
-        
-        if not user_text or not expiry_timestamp:
-            logging.error(f"Invalid download data format for token {token}. Data: {download_data}")
-            raise HTTPException(status_code=400, detail="Invalid download data format.")
-            
-        if time.time() > expiry_timestamp:
-            logging.warning(f"Download token {token} expired. Current time: {time.time()}, Expiry: {expiry_timestamp}")
-            raise HTTPException(status_code=400, detail="Download link expired.")
-            
-        # Invalidate token (one-time use)
-        del temporary_download_urls[token]
-        logging.info(f"Token {token} removed from temporary_download_urls after successful retrieval")
+        logging.info(f"Token {token[:8]}... found directly in temporary_download_urls")
+        user_text = temporary_download_urls[token]["user_text"]
     else:
-        # If not found directly, search for the token in download_data values
-        # This handles the case where token is a download_token stored in order_id entry (new method)
-        logging.info(f"Token {token} not found directly in temporary_download_urls, searching in download_data values")
+        # Look for token in order entries
+        logging.info(f"Token {token[:8]}... not found directly, searching in order entries")
         found = False
-        for order_id, data in list(temporary_download_urls.items()):
-            stored_token = data.get("download_token")
-            if stored_token == token:
-                logging.info(f"Token {token} found in order_id {order_id}")
+        for order_id, data in temporary_download_urls.items():
+            if isinstance(data, dict) and data.get("download_token") == token:
                 user_text = data.get("user_text")
-                expiry_timestamp = data.get("expiry_timestamp")
-                
-                if not user_text or not expiry_timestamp:
-                    logging.error(f"Invalid download data format for order_id {order_id}. Data: {data}")
-                    raise HTTPException(status_code=400, detail="Invalid download data format.")
-                    
-                if time.time() > expiry_timestamp:
-                    logging.warning(f"Download token {token} for order_id {order_id} expired. Current time: {time.time()}, Expiry: {expiry_timestamp}")
-                    raise HTTPException(status_code=400, detail="Download link expired.")
-                
-                # Invalidate token (one-time use)
-                del temporary_download_urls[order_id]
-                logging.info(f"Order_id {order_id} removed from temporary_download_urls after successful token retrieval")
+                token = data.get("download_token")
+                logging.info(f"Found token {token[:8]}... via order_id {order_id}")
                 found = True
                 break
                 
         if not found:
-            logging.error(f"Token {token} not found in any temporary_download_urls entries. Current entries: {list(temporary_download_urls.keys())}")
+            logging.error(f"Token {token[:8]}... not found in any temporary_download_urls entries. Current entries: {list(temporary_download_urls.keys())}")
             raise HTTPException(status_code=400, detail="Invalid download link.")
     
     # *** ENHANCED LOGGING - User text retrieved ***
-    logging.info(f"Retrieved user_text for token {token}: {user_text[:50]}..." if user_text else "No user_text found")
+    logging.info(f"Retrieved user_text for token {token[:8]}...: {user_text[:50]}..." if user_text else "No user_text found")
     
     try:
         # *** ENHANCED ERROR HANDLING - Try...except block for PDF generation ***
-        logging.info(f"Starting PDF generation for token {token}")
+        logging.info(f"Before generate_cv_content_gemini call for token {token[:8]}...")
         ai_cv_content = generate_cv_content_gemini(user_text)  # Re-generate AI content
-        logging.info(f"AI content generated successfully for token {token}")
+        logging.info(f"After generate_cv_content_gemini: content length = {len(ai_cv_content) if ai_cv_content else 'None'}")
         
+        logging.info(f"Before generate_cv_html call for token {token[:8]}...")
         html_content = generate_cv_html(ai_cv_content)
-        logging.info(f"HTML content generated successfully for token {token}")
+        logging.info(f"After generate_cv_html: HTML content length = {len(html_content) if html_content else 'None'}")
         
+        logging.info(f"Before convert_html_to_pdf call for token {token[:8]}...")
         pdf_bytes = convert_html_to_pdf(html_content)
-        logging.info(f"PDF conversion completed for token {token}")
+        if pdf_bytes is None:
+            logging.error(f"convert_html_to_pdf returned None!")
+        else:
+            logging.info(f"After convert_html_to_pdf: PDF size = {len(pdf_bytes)} bytes")
         
         if pdf_bytes:
-            logging.info(f"Successfully generated PDF for token {token}, size: {len(pdf_bytes)} bytes")
+            logging.info(f"Before creating StreamingResponse: PDF size = {len(pdf_bytes)} bytes")
 
             # --- START: Temporary SAVE PDF TO DISK for debugging ---
             try:
@@ -170,18 +147,18 @@ async def download_cv_pdf_route(token: str) -> StreamingResponse:
             except Exception as e:
                 logging.error(f"Error saving PDF to disk: {e}")
             # --- END: Temporary SAVE PDF TO DISK for debugging ---
-
+            
             return StreamingResponse(
                 io.BytesIO(pdf_bytes),
                 media_type="application/pdf",
                 headers={"Content-Disposition": f"attachment;filename=cv_{token[:8]}.pdf"}
             )
         else:
-            logging.error(f"PDF generation failed for token {token} - pdf_bytes is empty or None")
+            logging.error(f"PDF generation failed - pdf_bytes is None!")
             raise HTTPException(status_code=500, detail="PDF generation failed - no bytes returned")
     except Exception as e:
         # *** ENHANCED ERROR HANDLING - Catch any exception during PDF generation ***
-        logging.exception(f"Error generating PDF for token {token}: {str(e)}")
+        logging.exception(f"Error generating PDF for token {token[:8]}...: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
 
 @router.get("/api/download-cv-pdf-file/{token}")
@@ -362,44 +339,64 @@ async def download_cv_pdf_direct_debug(token: str, request: Request):
 @router.post("/api/download-cv-pdf/")
 async def download_cv_pdf_direct_route(cv_text_input: CVTextInput) -> StreamingResponse:
     """
-    Endpoint to download the generated CV as a PDF.
-    This is the original direct download route, kept for backward compatibility.
+    Direct download endpoint for CV PDF.
+    Accepts the CV text input directly and returns the PDF.
     """
+    logging.info(f"ENTRY: download_cv_pdf_direct_route called with text length: {len(cv_text_input.cv_text) if cv_text_input.cv_text else 'None'}")
+    
     try:
-        user_text = cv_text_input.user_text
-        logging.info("Starting direct PDF generation")
+        user_text = cv_text_input.cv_text
+        if not user_text:
+            logging.error("download_cv_pdf_direct_route received empty cv_text")
+            raise HTTPException(status_code=400, detail="CV text cannot be empty")
         
+        # Generate token for this download
+        token = str(uuid.uuid4())
+        logging.info(f"Generated token for direct download: {token[:8]}...")
+        
+        # Store in temporary_download_urls with 24 hour expiry
+        expiry_timestamp = time.time() + 86400  # 24 hours
+        temporary_download_urls[token] = {
+            "user_text": user_text,
+            "expiry_timestamp": expiry_timestamp
+        }
+        
+        logging.info(f"Before generate_cv_content_gemini call")
         ai_cv_content = generate_cv_content_gemini(user_text)
-        logging.info("AI content generated successfully for direct download")
+        logging.info(f"After generate_cv_content_gemini: content length = {len(ai_cv_content) if ai_cv_content else 'None'}")
         
+        logging.info(f"Before generate_cv_html call")
         html_content = generate_cv_html(ai_cv_content)
-        logging.info("HTML content generated successfully for direct download")
+        logging.info(f"After generate_cv_html: HTML content length = {len(html_content) if html_content else 'None'}")
         
+        logging.info(f"Before convert_html_to_pdf call")
         pdf_bytes = convert_html_to_pdf(html_content)
-        logging.info(f"PDF conversion completed for direct download, size: {len(pdf_bytes) if pdf_bytes else 'None'} bytes")
-
+        if pdf_bytes is None:
+            logging.error(f"convert_html_to_pdf returned None!")
+        else:
+            logging.info(f"After convert_html_to_pdf: PDF size = {len(pdf_bytes)} bytes")
+        
         if pdf_bytes:
-            # Generate a random identifier for debugging purposes
-            debug_id = str(uuid.uuid4())[:8]
+            logging.info(f"Before creating StreamingResponse: PDF size = {len(pdf_bytes)} bytes")
             
-            # --- START: Temporary SAVE PDF TO DISK for debugging ---
+            # --- TEMPORARY SAVE PDF TO DISK for debugging ---
             try:
-                filepath = f"/tmp/cv_download_direct_{debug_id}.pdf"
+                filepath = f"/tmp/cv_direct_{token[:8]}.pdf"
                 with open(filepath, 'wb') as f:
                     f.write(pdf_bytes)
-                logging.info(f"Saved direct download PDF to disk for debugging: {filepath}")
+                logging.info(f"Saved direct PDF to disk for debugging: {filepath}")
             except Exception as e:
-                logging.error(f"Error saving direct download PDF to disk: {e}")
-            # --- END: Temporary SAVE PDF TO DISK for debugging ---
+                logging.error(f"Error saving direct PDF to disk: {e}")
+            # --- END TEMPORARY SAVE ---
             
             return StreamingResponse(
                 io.BytesIO(pdf_bytes),
                 media_type="application/pdf",
-                headers={"Content-Disposition": f"attachment;filename=cv_{debug_id}.pdf"}
+                headers={"Content-Disposition": f"attachment;filename=cv_{token[:8]}.pdf"}
             )
         else:
-            logging.error("PDF generation failed for direct download - pdf_bytes is empty or None")
-            raise HTTPException(status_code=500, detail="PDF generation failed - no bytes returned")
+            logging.error(f"PDF generation failed - pdf_bytes is None!")
+            raise HTTPException(status_code=500, detail="PDF generation failed")
     except Exception as e:
         logging.exception(f"Error in direct PDF download: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
