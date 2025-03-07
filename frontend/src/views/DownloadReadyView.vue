@@ -87,6 +87,9 @@
               <button @click="downloadCVDebug" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
                 <span>Try Enhanced Download</span>
               </button>
+              <button @click="downloadCVDirect" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
+                <span>Try Direct Download</span>
+              </button>
             </div>
           </div>
           
@@ -326,6 +329,49 @@ const downloadCVDebug = async () => {
   } catch (err) {
     console.error('Error with debug download:', err);
     alert('Error downloading your CV using debug method. Please try again.');
+  }
+};
+
+const downloadCVDirect = async () => {
+  // Try the direct download endpoint
+  const userText = localStorage.getItem('cv_user_text');
+  
+  if (!userText) {
+    alert('Sorry, your CV content is not available. Please generate a new CV.');
+    return;
+  }
+
+  try {
+    console.log('Attempting direct download');
+    const response = await fetch(`/api/download-cv-pdf-direct/${downloadToken.value}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with ${response.status}: ${await response.text()}`);
+    }
+
+    // Log response headers for debugging
+    console.log('Response headers:');
+    response.headers.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+
+    const blob = await response.blob();
+    console.log('Received direct blob:', blob.size, 'bytes, type:', blob.type);
+    
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cv_direct_${downloadToken.value.substring(0, 8)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    console.log('Direct download initiated successfully');
+  } catch (err) {
+    console.error('Error with direct download:', err);
+    alert('Error downloading your CV using direct method. Please try again.');
   }
 };
 </script>

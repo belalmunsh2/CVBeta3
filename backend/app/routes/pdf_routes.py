@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Response, HTTPException, Request, FileResponse
+from fastapi import APIRouter, Response, HTTPException, Request
 from fastapi.responses import StreamingResponse, PlainTextResponse, RedirectResponse
+from starlette.responses import FileResponse
 from typing import Optional, Dict, Any
 import logging
 import uuid
@@ -310,6 +311,53 @@ async def download_cv_pdf_debug_route(token: str, request: Request):
     except Exception as e:
         logging.exception(f"Error in debug PDF download: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+@router.get("/api/download-cv-pdf-direct/{token}")
+async def download_cv_pdf_direct_debug(token: str, request: Request):
+    """
+    Simplified debug endpoint that directly returns the PDF without complex streaming.
+    This minimal implementation helps isolate potential issues in StreamingResponse.
+    """
+    # Token validation (simplified from main route)
+    if token not in temporary_download_urls:
+        for order_id, data in temporary_download_urls.items():
+            if isinstance(data, dict) and data.get("download_token") == token:
+                user_text = data.get("user_text")
+                token = data.get("download_token")
+                break
+        else:
+            raise HTTPException(status_code=400, detail="Invalid download token")
+    else:
+        user_text = temporary_download_urls[token]["user_text"]
+    
+    # Generate PDF with minimal steps
+    logging.info(f"Starting simplified PDF generation for token {token}")
+    ai_cv_content = generate_cv_content_gemini(user_text)  
+    html_content = generate_cv_html(ai_cv_content)
+    pdf_bytes = convert_html_to_pdf(html_content)
+    
+    if not pdf_bytes:
+        logging.error("PDF generation failed - empty or None bytes returned")
+        raise HTTPException(status_code=500, detail="PDF generation failed")
+    
+    # Log basic info
+    logging.info(f"Generated PDF size: {len(pdf_bytes)} bytes")
+    
+    # Save a copy for debugging
+    debug_filename = f"direct_pdf_{token[:8]}.pdf"
+    with open(f"/tmp/{debug_filename}", "wb") as f:
+        f.write(pdf_bytes)
+    
+    # Return as direct Response without streaming
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=cv_{token[:8]}.pdf",
+            "Content-Type": "application/pdf",
+            "Content-Length": str(len(pdf_bytes))
+        }
+    )
 
 @router.post("/api/download-cv-pdf/")
 async def download_cv_pdf_direct_route(cv_text_input: CVTextInput) -> StreamingResponse:
