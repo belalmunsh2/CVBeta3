@@ -42,48 +42,6 @@ export async function getDownloadUrl(userText: string, downloadToken?: string): 
   }
 };
 
-/**
- * Initiates the download of a CV PDF file by obtaining a download URL from the server
- * and redirecting the browser to that URL.
- * This implementation is independent of browser detection utilities.
- * 
- * @param userText - The user's CV text content
- * @param downloadToken - Optional token for authentication
- */
-export async function downloadCvPdf(userText: string, downloadToken?: string): Promise<void> {
-    try {
-        if (!userText || userText.trim().length === 0) {
-            throw new Error("User text is required for download");
-        }
-
-        console.log("Initiating download with token:", downloadToken ? "Present" : "Not present");
-
-        const response = await fetch(`/api/download-cv-pdf/${downloadToken}`, {
-            method: 'GET',
-        });
-
-        if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}`);
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `cv_${downloadToken?.substring(0, 8) || 'cv'}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        console.log('CV download initiated successfully (downloadCvPdf)');
-
-    } catch (error) {
-        console.error("Error initiating PDF download:", error);
-        alert("There was a problem downloading your CV. Please try again.");
-    }
-};
-
 export async function createPaymentSession(payload: any): Promise<any> {
     try {
         console.log("Requesting payment session with payload:", JSON.stringify(payload));

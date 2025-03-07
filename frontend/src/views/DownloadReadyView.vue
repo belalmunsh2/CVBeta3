@@ -159,7 +159,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { downloadCvPdf } from '../services/api';
 
 // Get the route object to access URL parameters
 const route = useRoute();
@@ -213,165 +212,32 @@ const downloadCV = async () => {
       downloadButton.querySelector('span').textContent = 'Downloading...';
     }
     
-    try {
-      const response = await fetch(`/api/download-cv-pdf/${downloadToken.value}`, {
-        method: 'GET',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+    // Use the full backend URL instead of a relative path
+    const backendURL = `https://cuddly-engine-pjwvppv46rqgf7q7j-8000.app.github.dev/api/download-cv-pdf/${downloadToken.value}`;
+    
+    // Simplify the download by using a direct redirect instead of fetch/blob handling
+    window.location.href = backendURL;
+    console.log('CV download initiated successfully');
+    
+    // Since we're redirecting, we can't reset the button state after download
+    // The page will reload when the user navigates back anyway
+    setTimeout(() => {
+      // Reset button state after a short delay
+      if (downloadButton) {
+        downloadButton.removeAttribute('disabled');
+        downloadButton.querySelector('span').textContent = 'Download Your CV';
       }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cv_${downloadToken.value.substring(0, 8)}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      console.log('CV download initiated successfully (direct fetch)');
-    } catch (downloadErr) {
-      console.log('Direct download failed, falling back to original method');
-      await downloadCvPdf(userText, downloadToken.value); // Keep fallback for now
-    }
+    }, 3000); // Give time for the download to start before resetting the button
   } catch (err) {
     console.error('Error downloading PDF:', err);
     alert('Error downloading your CV. Please try again.');
-  } finally {
+    
     // Reset button state
     const downloadButton = document.querySelector('.download-btn');
     if (downloadButton) {
       downloadButton.removeAttribute('disabled');
       downloadButton.querySelector('span').textContent = 'Download Your CV';
     }
-  }
-};
-
-// New methods for debugging alternative download methods
-const downloadCVFile = async () => {
-  // Try the FileResponse-based endpoint
-  const userText = localStorage.getItem('cv_user_text');
-  
-  if (!userText) {
-    alert('Sorry, your CV content is not available. Please generate a new CV.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`/api/download-cv-pdf-file/${downloadToken.value}`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server responded with ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    console.log('Received file blob:', blob.size, 'bytes, type:', blob.type);
-    
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cv_file_${downloadToken.value.substring(0, 8)}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    console.log('File-based download initiated successfully');
-  } catch (err) {
-    console.error('Error with file-based download:', err);
-    alert('Error downloading your CV using file method. Please try again.');
-  }
-};
-
-const downloadCVDebug = async () => {
-  // Try the enhanced debug endpoint
-  const userText = localStorage.getItem('cv_user_text');
-  
-  if (!userText) {
-    alert('Sorry, your CV content is not available. Please generate a new CV.');
-    return;
-  }
-
-  try {
-    console.log('Attempting enhanced debug download');
-    const response = await fetch(`/api/download-cv-pdf-debug/${downloadToken.value}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/pdf',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server responded with ${response.status}: ${await response.text()}`);
-    }
-
-    // Log response headers for debugging
-    console.log('Response headers:');
-    response.headers.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
-
-    const blob = await response.blob();
-    console.log('Received debug blob:', blob.size, 'bytes, type:', blob.type);
-    
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cv_debug_${downloadToken.value.substring(0, 8)}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    console.log('Debug download initiated successfully');
-  } catch (err) {
-    console.error('Error with debug download:', err);
-    alert('Error downloading your CV using debug method. Please try again.');
-  }
-};
-
-const downloadCVDirect = async () => {
-  // Try the direct download endpoint
-  const userText = localStorage.getItem('cv_user_text');
-  
-  if (!userText) {
-    alert('Sorry, your CV content is not available. Please generate a new CV.');
-    return;
-  }
-
-  try {
-    console.log('Attempting direct download');
-    const response = await fetch(`/api/download-cv-pdf-direct/${downloadToken.value}`, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server responded with ${response.status}: ${await response.text()}`);
-    }
-
-    // Log response headers for debugging
-    console.log('Response headers:');
-    response.headers.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
-
-    const blob = await response.blob();
-    console.log('Received direct blob:', blob.size, 'bytes, type:', blob.type);
-    
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cv_direct_${downloadToken.value.substring(0, 8)}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    console.log('Direct download initiated successfully');
-  } catch (err) {
-    console.error('Error with direct download:', err);
-    alert('Error downloading your CV using direct method. Please try again.');
   }
 };
 </script>
