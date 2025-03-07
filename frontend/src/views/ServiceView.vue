@@ -56,7 +56,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { generateCV, downloadCvPdf, createPaymentSession } from '../services/api';
+import { generateCV, createPaymentSession } from '../services/api';
 import PromoCode from '../components/PromoCode.vue';
 import CVForm from '../components/CvForm.vue';
 
@@ -119,14 +119,8 @@ const handleGenerateClick = async () => {
   }
 };
 
-const handleDownloadClick = async () => {
-  try {
-    await downloadCvPdf(userText.value);
-  } catch (err) {
-    console.error('Error downloading PDF:', err);
-    error.value = 'Error downloading PDF. Please try again.';
-  }
-};
+// Note: Removing handleDownloadClick function as it's no longer needed
+// Downloads are now handled directly in DownloadReadyView.vue
 
 let testPaymentCounter = 0;
 
