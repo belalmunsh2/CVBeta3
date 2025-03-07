@@ -205,7 +205,7 @@ async def download_cv_pdf_file_route(token: str, request: Request):
         
         logging.info(f"Saved PDF to {file_path}, size: {len(pdf_bytes)} bytes")
         
-        # Return a FileResponse instead of StreamingResponse
+        # Return a FileResponse instead of Stre amingResponse
         return FileResponse(
             path=file_path,
             filename=f"cv_{token[:8]}.pdf",
