@@ -196,7 +196,7 @@ async def download_cv_pdf_file_route(token: str, request: Request):
             logging.error(f"Generated PDF seems invalid, size: {len(pdf_bytes) if pdf_bytes else 0} bytes")
             raise HTTPException(status_code=500, detail="Generated PDF file appears invalid")
         
-        # Save to a temporary file with unique name
+        # Save to a temporary f ile with unique name
         temp_filename = f"cv_download_{token[:8]}_{int(time.time())}.pdf"
         file_path = f"/tmp/{temp_filename}"
         
