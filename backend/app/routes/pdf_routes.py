@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, HTTPException, Request
+from fastapi import APIRouter, Response, HTTPException, Request, FileResponse
 from fastapi.responses import StreamingResponse, PlainTextResponse, RedirectResponse
 from typing import Optional, Dict, Any
 import logging
@@ -10,6 +10,7 @@ from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import convert_html_to_pdf, generate_cv_html
 from ..config import PUBLIC_BASE_URL
 import io
+import hashlib
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -180,6 +181,134 @@ async def download_cv_pdf_route(token: str) -> StreamingResponse:
     except Exception as e:
         # *** ENHANCED ERROR HANDLING - Catch any exception during PDF generation ***
         logging.exception(f"Error generating PDF for token {token}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+@router.get("/api/download-cv-pdf-file/{token}")
+async def download_cv_pdf_file_route(token: str, request: Request):
+    """
+    TEST ENDPOINT: Alternative implementation that saves PDF to file and serves it directly.
+    This bypasses StreamingResponse to determine if that's causing the corruption.
+    """
+    # First check if the token exists and is valid
+    if token not in temporary_download_urls:
+        for order_id, data in temporary_download_urls.items():
+            if isinstance(data, dict) and data.get("download_token") == token:
+                user_text = data.get("user_text")
+                token = data.get("download_token")
+                logging.info(f"Found token {token} via order_id {order_id}")
+                break
+        else:
+            raise HTTPException(status_code=400, detail="Invalid download link.")
+    else:
+        # Get the user_text from the token
+        user_text = temporary_download_urls[token]["user_text"]
+    
+    logging.info(f"Starting PDF generation via FILE serving route for token {token}")
+    
+    try:
+        ai_cv_content = generate_cv_content_gemini(user_text)
+        logging.info(f"AI content generated for file serving route")
+        
+        html_content = generate_cv_html(ai_cv_content)
+        logging.info(f"HTML content generated for file serving route")
+        
+        pdf_bytes = convert_html_to_pdf(html_content)
+        
+        if not pdf_bytes or len(pdf_bytes) < 100:
+            logging.error(f"Generated PDF seems invalid, size: {len(pdf_bytes) if pdf_bytes else 0} bytes")
+            raise HTTPException(status_code=500, detail="Generated PDF file appears invalid")
+        
+        # Save to a temporary file with unique name
+        temp_filename = f"cv_download_{token[:8]}_{int(time.time())}.pdf"
+        file_path = f"/tmp/{temp_filename}"
+        
+        with open(file_path, "wb") as f:
+            f.write(pdf_bytes)
+        
+        logging.info(f"Saved PDF to {file_path}, size: {len(pdf_bytes)} bytes")
+        
+        # Return a FileResponse instead of StreamingResponse
+        return FileResponse(
+            path=file_path,
+            filename=f"cv_{token[:8]}.pdf",
+            media_type="application/pdf"
+        )
+    except Exception as e:
+        logging.exception(f"Error in file-based PDF download: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
+
+@router.get("/api/download-cv-pdf-debug/{token}")
+async def download_cv_pdf_debug_route(token: str, request: Request):
+    """
+    TEST ENDPOINT: Modified streaming implementation with enhanced debugging
+    and explicit headers to diagnose PDF streaming issues.
+    """
+    # Token validation (same as the original endpoint)
+    if token not in temporary_download_urls:
+        for order_id, data in temporary_download_urls.items():
+            if isinstance(data, dict) and data.get("download_token") == token:
+                user_text = data.get("user_text")
+                token = data.get("download_token")
+                logging.info(f"Found token {token} via order_id {order_id}")
+                break
+        else:
+            raise HTTPException(status_code=400, detail="Invalid download link.")
+    else:
+        user_text = temporary_download_urls[token]["user_text"]
+    
+    logging.info(f"Starting PDF generation via DEBUG streaming route for token {token}")
+    
+    try:
+        ai_cv_content = generate_cv_content_gemini(user_text)
+        logging.info(f"AI content generated for debug route")
+        
+        html_content = generate_cv_html(ai_cv_content)
+        logging.info(f"HTML content generated for debug route")
+        
+        pdf_bytes = convert_html_to_pdf(html_content)
+        logging.info(f"PDF conversion completed, size: {len(pdf_bytes) if pdf_bytes else 'None'} bytes")
+        
+        if not pdf_bytes or len(pdf_bytes) < 100:
+            logging.error(f"Generated PDF seems invalid, size: {len(pdf_bytes) if pdf_bytes else 0} bytes")
+            raise HTTPException(status_code=500, detail="Generated PDF file appears invalid")
+        
+        # Save PDF to file for comparison
+        debug_filename = f"cv_debug_{token[:8]}_{int(time.time())}.pdf"
+        debug_path = f"/tmp/{debug_filename}"
+        
+        with open(debug_path, "wb") as f:
+            f.write(pdf_bytes)
+        
+        logging.info(f"Saved debug PDF to {debug_path}, size: {len(pdf_bytes)} bytes")
+        
+        # Calculate MD5 hash of the PDF bytes for debugging
+        pdf_hash = hashlib.md5(pdf_bytes).hexdigest()
+        logging.info(f"PDF MD5 hash before streaming: {pdf_hash}")
+        
+        # Create a fresh BytesIO object from the bytes
+        pdf_stream = io.BytesIO(pdf_bytes)
+        
+        # Set explicit and comprehensive headers
+        headers = {
+            "Content-Disposition": f"attachment; filename=\"cv_{token[:8]}.pdf\"",
+            "Content-Type": "application/pdf",
+            "Content-Length": str(len(pdf_bytes)),
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+        
+        # Use a direct Response instead of StreamingResponse for testing
+        # return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+        
+        # Or use StreamingResponse with explicit chunk size
+        return StreamingResponse(
+            pdf_stream,
+            media_type="application/pdf",
+            headers=headers
+        )
+    except Exception as e:
+        logging.exception(f"Error in debug PDF download: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating PDF: {str(e)}")
 
 @router.post("/api/download-cv-pdf/")
