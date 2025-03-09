@@ -12,6 +12,9 @@ from ..services.pdf_service import convert_html_to_pdf, generate_cv_html
 from ..config import PUBLIC_BASE_URL
 import io
 import hashlib
+from pdf2image import convert_from_bytes
+from PIL import Image, ImageFilter
+from io import BytesIO
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,6 +27,59 @@ temporary_download_urls: Dict[str, Dict[str, Any]] = {}
 
 # Frontend base URL - Replace with your actual frontend URL
 FRONTEND_BASE_URL = "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev"
+
+@router.post("/api/preview")
+async def generate_preview(request: Request):
+    """Generate a blurred preview image of the CV's first page."""
+    try:
+        data = await request.json()
+        user_text = data.get("user_text")
+        
+        if not user_text:
+            raise HTTPException(status_code=400, detail="user_text is required")
+
+        logger.info("Generating preview for CV with text length: %d", len(user_text))
+        
+        # Generate CV content using AI
+        ai_cv_content = generate_cv_content_gemini(user_text)
+        if not ai_cv_content:
+            logger.error("Failed to generate CV content for preview")
+            raise HTTPException(status_code=500, detail="Failed to generate CV content")
+
+        # Generate HTML
+        html_content = generate_cv_html(ai_cv_content)
+        if not html_content:
+            logger.error("Failed to generate HTML for preview")
+            raise HTTPException(status_code=500, detail="Failed to generate HTML")
+
+        # Generate PDF
+        pdf_bytes = convert_html_to_pdf(html_content)
+        if not pdf_bytes:
+            logger.error("Failed to generate PDF for preview")
+            raise HTTPException(status_code=500, detail="Failed to generate PDF")
+
+        # Convert PDF to image (first page only, lower DPI for speed)
+        logger.info("Converting PDF to image for preview")
+        images = convert_from_bytes(pdf_bytes, dpi=100)
+        img = images[0]
+
+        # Blur the bottom half of the image
+        width, height = img.size
+        bottom_half = img.crop((0, height // 2, width, height))
+        blurred_bottom = bottom_half.filter(ImageFilter.GaussianBlur(radius=10))
+        img.paste(blurred_bottom, (0, height // 2))
+
+        # Convert image to bytes
+        img_bytes = BytesIO()
+        img.save(img_bytes, format="PNG")
+        img_bytes.seek(0)
+        
+        logger.info("Successfully generated CV preview image")
+        return StreamingResponse(img_bytes, media_type="image/png")
+    
+    except Exception as e:
+        logger.exception("Error generating CV preview: %s", str(e))
+        raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
 
 @router.post("/api/get-download-url/")
 async def get_download_url_route(cv_text_input: CVTextInput, request: Request) -> Dict[str, str]:

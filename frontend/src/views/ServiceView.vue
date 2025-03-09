@@ -29,6 +29,9 @@
         </div>
       </div>
 
+      <!-- CV Preview Component -->
+      <Preview v-if="cvContent" :userText="userText" />
+
       <div v-if="cvContent" class="bg-white rounded-xl shadow-sm p-6 sm:p-8 transition-shadow duration-300 hover:shadow-md">
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Complete Your Order</h2>
         <div class="text-base sm:text-lg font-medium text-gray-700 mb-6">
@@ -59,6 +62,7 @@ import { ref, computed, onMounted } from 'vue';
 import { generateCV, createPaymentSession } from '../services/api';
 import PromoCode from '../components/PromoCode.vue';
 import CVForm from '../components/CvForm.vue';
+import Preview from '../components/Preview.vue'; // Import the Preview component
 
 const userText = ref('');
 const userData = ref(null);
