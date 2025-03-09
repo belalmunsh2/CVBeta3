@@ -77,22 +77,6 @@
             <span>Download Your CV</span>
           </button>
           
-          <!-- Debug Download Buttons Section -->
-          <div class="mt-8 pt-4 border-t border-gray-200">
-            <p class="text-sm text-gray-500 mb-2 text-center">Experiencing issues with the download? Try these alternative options:</p>
-            <div class="space-y-3">
-              <button @click="downloadCVFile" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
-                <span>Try File Download</span>
-              </button>
-              <button @click="downloadCVDebug" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
-                <span>Try Enhanced Download</span>
-              </button>
-              <button @click="downloadCVDirect" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
-                <span>Try Direct Download</span>
-              </button>
-            </div>
-          </div>
-          
           <router-link 
             to="/" 
             class="text-primary-600 hover:text-primary-800 font-medium"
@@ -107,49 +91,24 @@
       
       <!-- Share & Feedback Section -->
       <div class="bg-primary-50 rounded-xl shadow-sm p-6 sm:p-8 border border-primary-100">
-        <h2 class="text-xl font-semibold text-primary-800 mb-4">Share Your Success!</h2>
+        <h2 class="text-xl font-semibold text-primary-800 mb-4">Share and Recommend Pro CV!</h2>
         <p class="text-primary-700 mb-6">Help your friends and colleagues create professional CVs too.</p>
         
-        <div class="flex flex-wrap gap-3 mb-6">
-          <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
-            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-            </svg>
-            Facebook
+        <div class="bg-white rounded-lg p-4 border border-primary-100 flex items-center justify-between">
+          <a 
+            :href="projectURL" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="text-primary-600 hover:text-primary-800 font-medium transition-colors duration-200"
+          >
+            {{ projectURL }}
+          </a>
+          <button 
+            @click="copyToClipboard" 
+            class="bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors duration-200 ml-3"
+          >
+            Copy
           </button>
-          <button class="bg-blue-400 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
-            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.1 10.1 0 01-3.127 1.184 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.937 4.937 0 004.604 3.417 9.868 9.868 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63a9.936 9.936 0 002.46-2.548l-.047-.02z" />
-            </svg>
-            Twitter
-          </button>
-          <button class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
-            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-            </svg>
-            WhatsApp
-          </button>
-          <button class="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center">
-            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-            </svg>
-            LinkedIn
-          </button>
-        </div>
-        
-        <div class="bg-white rounded-lg p-4 border border-primary-100">
-          <h3 class="text-lg font-medium text-gray-800 mb-2">Refer a friend & get 20% off your next purchase!</h3>
-          <div class="flex">
-            <input 
-              type="text" 
-              value="www.cv-generator.com/ref?code=YOUR123" 
-              readonly 
-              class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-l-lg focus:ring-1 focus:ring-primary-300 focus:border-primary-300 outline-none text-sm"
-            />
-            <button class="bg-primary-600 text-white px-4 py-2 rounded-r-lg text-sm font-medium hover:bg-primary-700 transition-colors duration-200">
-              Copy
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -165,29 +124,34 @@ const route = useRoute();
 const transactionId = ref('TXN' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'));
 const paymentAmount = ref(1000); // Default amount in cents
 const downloadToken = ref('');
+const projectURL = ref('https://pro-cv.myvnc.com/'); // Project URL for sharing
 
 onMounted(() => {
-  // Get the download token from the URL parameter
+  // Get the download token from the URL parameter or localStorage
   if (route.params.token) {
     downloadToken.value = route.params.token.toString();
   } else {
-    // Try to get it from localStorage as a fallback
+    // Try to get token from localStorage
     const storedToken = localStorage.getItem('download_token');
     if (storedToken) {
       downloadToken.value = storedToken;
     }
   }
-  
-  // Get the amount from the URL parameter
-  if (route.query.amount) {
-    paymentAmount.value = parseInt(route.query.amount.toString(), 10);
+
+  // Get payment amount from URL parameter
+  if (route.params.amount) {
+    paymentAmount.value = parseInt(route.params.amount.toString());
   }
-  
-  // Get the transaction ID from the URL parameter
-  if (route.query.transaction_id) {
-    transactionId.value = route.query.transaction_id.toString();
-  } else if (route.query.id) {
-    transactionId.value = 'TXN' + route.query.id.toString();
+
+  // Auto-download the CV PDF when page loads
+  if (downloadToken.value) {
+    // Create a temporary link element to trigger the download
+    const downloadLink = document.createElement('a');
+    downloadLink.href = `${import.meta.env.VITE_API_BASE_URL}/api/download-cv-pdf-file/${downloadToken.value}`;
+    downloadLink.download = 'your_cv.pdf';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   }
 });
 
@@ -239,5 +203,10 @@ const downloadCV = async () => {
       downloadButton.querySelector('span').textContent = 'Download Your CV';
     }
   }
+};
+
+const copyToClipboard = () => {
+  navigator.clipboard.writeText(projectURL.value);
+  alert('Copied to clipboard!');
 };
 </script>

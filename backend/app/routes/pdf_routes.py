@@ -64,11 +64,18 @@ async def generate_preview(request: Request):
         img = images[0]
         img = img.convert("RGB")  # Convert to RGB mode for better compatibility with filters
 
-        # Blur the ENTIRE image (for testing - strong blur)
+        # Blur the bottom 65% of the image with strong blur
         width, height = img.size
-        print(f"DEBUG: Image size before blur: width={width}, height={height}")  # Debug logging
-        img = img.filter(ImageFilter.GaussianBlur(radius=70))  # Apply blur to the whole image, VERY STRONG blur
-        print("DEBUG: Strong blur effect applied to entire image")  # Debug logging
+        blur_start_y = int(height * 0.35)  # Start blur at 35% from top (leaving top 35% clear)
+        print(f"DEBUG: Image size: width={width}, height={height}, blur_start_y={blur_start_y}")  # Debug logging
+        
+        # Crop the bottom 65% of the image
+        bottom_region = img.crop((0, blur_start_y, width, height))
+        # Apply strong blur with radius 70
+        blurred_bottom = bottom_region.filter(ImageFilter.GaussianBlur(radius=70))
+        # Paste the blurred region back
+        img.paste(blurred_bottom, (0, blur_start_y))
+        print("DEBUG: Strong blur applied to bottom 65% of image")  # Debug logging
 
         # Add "Preview Only" watermark
         draw = ImageDraw.Draw(img)
