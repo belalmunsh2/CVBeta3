@@ -64,14 +64,11 @@ async def generate_preview(request: Request):
         img = images[0]
         img = img.convert("RGB")  # Convert to RGB mode for better compatibility with filters
 
-        # Correct Blurring Logic: Blur the bottom half of the full image
+        # Blur the ENTIRE image (for testing - strong blur)
         width, height = img.size
-        bottom_y_start = height // 2  # Starting y-coordinate for the bottom half
         print(f"DEBUG: Image size before blur: width={width}, height={height}")  # Debug logging
-        bottom_region = img.crop((0, bottom_y_start, width, height)) # Crop the actual bottom half
-        blurred_bottom = bottom_region.filter(ImageFilter.GaussianBlur(radius=30)) # Temporarily increased radius for testing
-        img.paste(blurred_bottom, (0, bottom_y_start)) # Paste the blurred bottom half back onto the original image
-        print("DEBUG: Blur effect applied") # Debug logging
+        img = img.filter(ImageFilter.GaussianBlur(radius=70))  # Apply blur to the whole image, VERY STRONG blur
+        print("DEBUG: Strong blur effect applied to entire image")  # Debug logging
 
         # Add "Preview Only" watermark
         draw = ImageDraw.Draw(img)
@@ -259,7 +256,7 @@ async def download_cv_pdf_file_route(token: str, request: Request):
             if isinstance(data, dict) and data.get("download_token") == token:
                 user_text = data.get("user_text")
                 token = data.get("download_token")
-                logging.info(f"Found token {token} via order_id {order_id}")
+                logging.info(f"Found token {token[:8]}... via order_id {order_id}")
                 break
         else:
             raise HTTPException(status_code=400, detail="Invalid download link.")
@@ -313,7 +310,7 @@ async def download_cv_pdf_debug_route(token: str, request: Request):
             if isinstance(data, dict) and data.get("download_token") == token:
                 user_text = data.get("user_text")
                 token = data.get("download_token")
-                logging.info(f"Found token {token} via order_id {order_id}")
+                logging.info(f"Found token {token[:8]}... via order_id {order_id}")
                 break
         else:
             raise HTTPException(status_code=400, detail="Invalid download link.")
