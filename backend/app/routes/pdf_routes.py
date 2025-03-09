@@ -13,7 +13,7 @@ from ..config import PUBLIC_BASE_URL
 import io
 import hashlib
 from pdf2image import convert_from_bytes
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageDraw, ImageFont
 from io import BytesIO
 
 # Configure logging
@@ -30,7 +30,7 @@ FRONTEND_BASE_URL = "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev
 
 @router.post("/api/preview")
 async def generate_preview(request: Request):
-    """Generate a blurred preview image of the CV's first page."""
+    """Generate a blurred preview image of the CV's first page with bottom half blurred and watermark."""
     try:
         data = await request.json()
         user_text = data.get("user_text")
@@ -62,19 +62,49 @@ async def generate_preview(request: Request):
         logger.info("Converting PDF to image for preview")
         images = convert_from_bytes(pdf_bytes, dpi=100)
         img = images[0]
+        img = img.convert("RGB")  # Convert to RGB mode for better compatibility with filters
 
-        # Blur the bottom half of the image
+        # Correct Blurring Logic: Blur the bottom half of the full image
         width, height = img.size
-        bottom_half = img.crop((0, height // 2, width, height))
-        blurred_bottom = bottom_half.filter(ImageFilter.GaussianBlur(radius=10))
-        img.paste(blurred_bottom, (0, height // 2))
+        bottom_y_start = height // 2  # Starting y-coordinate for the bottom half
+        print(f"DEBUG: Image size before blur: width={width}, height={height}")  # Debug logging
+        bottom_region = img.crop((0, bottom_y_start, width, height)) # Crop the actual bottom half
+        blurred_bottom = bottom_region.filter(ImageFilter.GaussianBlur(radius=30)) # Temporarily increased radius for testing
+        img.paste(blurred_bottom, (0, bottom_y_start)) # Paste the blurred bottom half back onto the original image
+        print("DEBUG: Blur effect applied") # Debug logging
+
+        # Add "Preview Only" watermark
+        draw = ImageDraw.Draw(img)
+        font_size = 50 # Adjust font size as needed
+        try:
+            font = ImageFont.truetype("arial.ttf", font_size) # Try Arial font
+        except IOError:
+            font = ImageFont.load_default() # Fallback to default font if Arial not found
+
+        watermark_text = "Preview Only"
+        try:
+            text_width, text_height = draw.textsize(watermark_text, font=font)
+        except AttributeError:
+            # For newer Pillow versions that use textbbox instead of textsize
+            try:
+                text_bbox = draw.textbbox((0, 0), watermark_text, font=font)
+                text_width = text_bbox[2] - text_bbox[0]
+                text_height = text_bbox[3] - text_bbox[1]
+            except AttributeError:
+                # Fallback to approximation if neither method works
+                text_width = font_size * len(watermark_text) * 0.6
+                text_height = font_size * 1.2
+                
+        watermark_x = (width - text_width) // 2
+        watermark_y = (height - text_height) // 2
+        draw.text((watermark_x, watermark_y), watermark_text, font=font, fill=(128, 128, 128, 128)) # Semi-transparent gray
 
         # Convert image to bytes
         img_bytes = BytesIO()
         img.save(img_bytes, format="PNG")
         img_bytes.seek(0)
         
-        logger.info("Successfully generated CV preview image")
+        logger.info("Successfully generated CV preview image with watermark")
         return StreamingResponse(img_bytes, media_type="image/png")
     
     except Exception as e:

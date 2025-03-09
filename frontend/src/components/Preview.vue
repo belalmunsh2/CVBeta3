@@ -93,7 +93,7 @@ export default {
 .preview-container {
   max-width: 100%;
   width: 100%;
-  max-height: 700px;
+  /* max-height: 700px; */
   transition: all 0.2s ease-in-out;
 }
 
