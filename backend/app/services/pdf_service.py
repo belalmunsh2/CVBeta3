@@ -6,16 +6,57 @@ import json
 
 logger = logging.getLogger(__name__)
 
+def clean_ai_output(output: str) -> str:
+    """
+    Cleans the AI output by removing potential code block markers or extra text.
+    
+    Args:
+        output (str): The raw AI-generated string.
+    
+    Returns:
+        str: The cleaned string, ideally pure JSON.
+    """
+    output = output.strip()  # Remove leading/trailing whitespace
+    if output.startswith("```json"):
+        output = output[7:].strip()  # Remove ```json prefix
+    if output.endswith("```"):
+        output = output[:-3].strip()  # Remove ``` suffix
+    return output
+
 def generate_cv_html(cv_json: str) -> str:
     """
     Generates HTML content for the CV based on the structured JSON input.
+    
+    Args:
+        cv_json (str): A JSON string containing the CV data.
+    
+    Returns:
+        str: The generated HTML content.
     """
+    # Log the input for debugging
+    logger.info(f"Received cv_json type: {type(cv_json)}, length: {len(cv_json) if isinstance(cv_json, str) else 'N/A'}")
+    logger.info(f"cv_json content (first 100 chars): {cv_json[:100] if isinstance(cv_json, str) else str(cv_json)}...")
+
+    # Ensure cv_json is a string
+    if not isinstance(cv_json, str):
+        logger.error("cv_json is not a string, cannot parse")
+        return "<html><body><h1>Error: Invalid CV data (not a string)</h1></body></html>"
+
+    # Clean the input to remove potential formatting issues
+    cv_json = clean_ai_output(cv_json)
+
+    # Attempt to parse the cleaned JSON
     try:
         cv_data = json.loads(cv_json)
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse CV JSON: {str(e)}")
+        logger.error(f"Cleaned cv_json content: {cv_json}")
         return "<html><body><h1>Error: Invalid CV data</h1></body></html>"
 
+    # Log successful parsing
+    logger.info("Successfully parsed CV JSON into dictionary")
+
+    # Start building the HTML
     html_content = """
     <!DOCTYPE html>
     <html lang="en">
