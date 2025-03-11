@@ -199,7 +199,7 @@ def convert_html_to_pdf(html_string: str) -> bytes:
                 logger.error(f"File-based PDF is also suspiciously small: {len(pdf_bytes)} bytes")
                 return None
         
-        # Also save the PDF to a temporary file for inspection
+        # Also save the PDF to a tem porary file for inspection
         if pdf_bytes:
             pdf_path = html_path.replace('.html', '.pdf')
             with open(pdf_path, 'wb') as f:
