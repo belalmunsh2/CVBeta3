@@ -173,8 +173,10 @@
       <button 
         @click="submitForm" 
         class="btn-submit"
+        :disabled="props.isGenerating"
       >
-        Generate CV!
+        <span v-if="props.isGenerating">Loading...</span>
+        <span v-else>Generate CV!</span>
       </button>
     </div>
   </div>
@@ -188,6 +190,10 @@ import FormErrorMessage from './FormErrorMessage.vue';
 const props = defineProps({
   formData: {
     type: Object,
+    required: true
+  },
+  isGenerating: {
+    type: Boolean,
     required: true
   }
 });

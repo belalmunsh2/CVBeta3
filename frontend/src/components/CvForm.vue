@@ -51,13 +51,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, defineProps } from 'vue';
 import ProgressBar from './ProgressBar.vue';
 import PersonalInfoPage from './PersonalInfoPage.vue';
 import WorkExperiencePage from './WorkExperiencePage.vue';
 import EducationPage from './EducationPage.vue';
 import SkillsSummaryPage from './SkillsSummaryPage.vue';
 import CertificationsAdditionalPage from './CertificationsAdditionalPage.vue';
+
+const props = defineProps({
+  isGenerating: Boolean
+});
 
 const TOTAL_PAGES = 5;
 
