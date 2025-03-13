@@ -7,7 +7,18 @@
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Create Your CV</h2>
         
         <!-- CV Form Component -->
-        <CVForm @cv-submit="handleFormSubmit" />
+        <CVForm v-if="showForm" @cv-submit="handleFormSubmit" />
+        
+        <!-- Show when form is hidden -->
+        <div v-else class="text-center py-4">
+          <p class="text-gray-600 mb-3">Your CV information has been submitted.</p>
+          <button 
+            @click="showForm = true" 
+            class="text-primary-600 hover:text-primary-700 font-medium text-sm underline focus:outline-none"
+          >
+            Edit Information
+          </button>
+        </div>
       </div>
 
       <div 
@@ -72,6 +83,7 @@ const error = ref('');
 const currentAmount = ref(1001); // Base price in cents
 const discountedAmount = ref(null);
 const isDownloadButtonVisible = ref(false);
+const showForm = ref(true); // Add showForm state
 
 // Listen for the cv-submit event from the CVForm component
 onMounted(() => {
@@ -79,6 +91,7 @@ onMounted(() => {
     const { userData: formData, formattedText } = event.detail;
     userData.value = formData;
     userText.value = formattedText;
+    showForm.value = false; // Hide the form after submission
     handleGenerateClick();
   });
 });
@@ -97,6 +110,7 @@ const finalAmount = computed(() => {
 const handleFormSubmit = (data) => {
   userData.value = data.userData;
   userText.value = data.formattedText;
+  showForm.value = false; // Hide the form after submission
   handleGenerateClick();
 };
 
