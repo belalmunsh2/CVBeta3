@@ -10,11 +10,11 @@
         <CVForm v-if="showForm" @cv-submit="handleFormSubmit" />
         
         <!-- Show when form is hidden -->
-        <div v-else class="py-2">
-          <span class="text-gray-600 text-sm">Your CV information has been submitted.</span>
+        <div v-else class="text-center py-4">
+          <p class="text-gray-600 mb-3">Your CV information has been submitted.</p>
           <button 
             @click="showForm = true" 
-            class="text-primary-600 hover:text-primary-700 font-medium text-xs underline ml-2 focus:outline-none"
+            class="text-primary-600 hover:text-primary-700 font-medium text-sm underline focus:outline-none"
           >
             Edit Information
           </button>
@@ -41,7 +41,7 @@
       </div>
 
       <!-- CV Preview Component -->
-      <Preview v-if="cvContent" :userText="userText" ref="cvPreview" />
+      <Preview v-if="cvContent" :userText="userText" />
 
       <div v-if="cvContent" class="bg-white rounded-xl shadow-sm p-6 sm:p-8 transition-shadow duration-300 hover:shadow-md">
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Complete Your Order</h2>
@@ -84,7 +84,6 @@ const currentAmount = ref(1001); // Base price in cents
 const discountedAmount = ref(null);
 const isDownloadButtonVisible = ref(false);
 const showForm = ref(true); // Add showForm state
-const cvPreview = ref(null); // Reference to Preview component
 
 // Listen for the cv-submit event from the CVForm component
 onMounted(() => {
@@ -129,12 +128,6 @@ const handleGenerateClick = async () => {
     const response = await generateCV(userText.value);
     cvContent.value = response;
     isDownloadButtonVisible.value = true;
-    
-    // Automatically trigger the preview generation
-    if (cvPreview.value && userText.value) {
-      // Call the getPreview method of the Preview component
-      cvPreview.value.getPreview();
-    }
   } catch (err) {
     error.value = 'Error generating CV. Please try again.';
     console.error('Error:', err);

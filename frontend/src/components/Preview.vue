@@ -42,49 +42,51 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, defineProps, defineExpose } from 'vue';
+<script>
 import { getCvPreview } from '../services/api';
 
-const props = defineProps({
-  userText: {
-    type: String,
-    required: true
-  }
-});
-
-const previewUrl = ref('');
-const loading = ref(false);
-const error = ref('');
-
-const hasUserText = computed(() => {
-  return props.userText && props.userText.trim().length > 0;
-});
-
-const getPreview = async () => {
-  if (!hasUserText.value) {
-    error.value = 'Please provide your CV text first.';
-    return;
-  }
-  
-  loading.value = true;
-  error.value = '';
-  
-  try {
-    const blob = await getCvPreview(props.userText);
-    previewUrl.value = URL.createObjectURL(blob);
-  } catch (err) {
-    console.error('Error fetching preview:', err);
-    error.value = 'Failed to load preview. Please try again.';
-  } finally {
-    loading.value = false;
+export default {
+  name: 'Preview',
+  props: {
+    userText: {
+      type: String,
+      required: true
+    }
+  },
+  data() {
+    return {
+      previewUrl: '',
+      loading: false,
+      error: ''
+    };
+  },
+  computed: {
+    hasUserText() {
+      return this.userText && this.userText.trim().length > 0;
+    }
+  },
+  methods: {
+    async getPreview() {
+      if (!this.hasUserText) {
+        this.error = 'Please provide your CV text first.';
+        return;
+      }
+      
+      this.loading = true;
+      this.error = '';
+      
+      try {
+        const blob = await getCvPreview(this.userText);
+        this.previewUrl = URL.createObjectURL(blob);
+      } catch (error) {
+        console.error('Error fetching preview:', error);
+        this.error = 'Failed to load preview. Please try again.';
+      } finally {
+        this.loading = false;
+      }
+    }
   }
 };
-
-// Expose the getPreview method to parent components
-defineExpose({
-  getPreview
-});
 </script>
 
 <style scoped>
