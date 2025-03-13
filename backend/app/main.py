@@ -15,7 +15,10 @@ app = FastAPI()
 
 # Configure CORS - VERY IMPORTANT 
 origins = [
-    "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev",  # <----  MAKE SURE THIS IS EXACTLY AS IN THE ERROR!
+    "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev",  # Frontend origin
+    "https://cuddly-engine-pjwvppv46rqgf7q7j-8000.app.github.dev",  # Backend origin
+    "http://localhost:5173",  # Local frontend
+    "http://localhost:8000",  # Local backend
 ]
 
 app.add_middleware(
