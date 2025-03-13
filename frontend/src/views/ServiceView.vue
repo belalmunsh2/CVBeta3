@@ -247,5 +247,6 @@ const handlePayNowClick = async () => {
 const handleEditInformation = () => {
   showForm.value = true;
   error.value = '';
+  cvContent.value = ''; // Clear CV content to hide preview and payment sections
 }
 </script>
