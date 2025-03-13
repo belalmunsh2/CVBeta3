@@ -10,7 +10,7 @@
         <!-- Show when form is hidden -->
         <div v-else class="text-center py-4">
           <button 
-            @click="showForm = true" 
+            @click="handleEditInformation" 
             class="text-primary-600 hover:text-primary-700 font-medium text-sm underline focus:outline-none"
           >
             Edit Information
@@ -108,6 +108,7 @@ const finalAmount = computed(() => {
 
 // Handle form submission from the CVForm component
 const handleFormSubmit = (data) => {
+  isGeneratingCV.value = true; // Set loading state right at the beginning
   userData.value = data.userData;
   userText.value = data.formattedText;
   showForm.value = false; // Hide the form after submission
@@ -236,5 +237,15 @@ const handlePayNowClick = async () => {
   } finally {
     isLoading.value = false;
   }
+};
+
+// Function to handle "Edit Information" button click
+const handleEditInformation = () => {
+  showForm.value = true;
+  cvContent.value = ''; // Clear the CV content to hide the preview and payment sections
+  isGeneratingCV.value = false;
+  isLoading.value = false;
+  error.value = '';
+  isDownloadButtonVisible.value = false;
 };
 </script>
