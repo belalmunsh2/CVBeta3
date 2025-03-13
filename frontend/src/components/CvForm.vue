@@ -42,6 +42,7 @@
       <CertificationsAdditionalPage 
         v-if="currentPage === 5"
         :form-data="formData"
+        :is-generating="props.isGenerating"
         @update-form-data="updateFormData"
         @prev-page="prevPage"
         @submit-form="submitForm"

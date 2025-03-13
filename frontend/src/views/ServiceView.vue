@@ -4,11 +4,7 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-primary-600 text-center mb-8">CV Creator Service</h1>
       
       <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 mb-8 transition-shadow duration-300 hover:shadow-md">
-        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Create Your CV</h2>
-        
-        <!-- CV Form Component -->
         <CVForm v-if="showForm" @cv-submit="handleFormSubmit" :is-generating="isGeneratingCV" />
-        
       </div>
 
       <div 
@@ -31,7 +27,9 @@
       </div>
 
       <!-- CV Preview Component -->
-      <Preview v-if="cvContent" :userText="userText" />
+      <div class="preview-component">
+        <Preview v-if="cvContent" :userText="userText" />
+      </div>
 
       <div v-if="cvContent" class="bg-white rounded-xl shadow-sm p-6 sm:p-8 transition-shadow duration-300 hover:shadow-md">
         <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-5">Complete Your Order</h2>
@@ -120,6 +118,14 @@ const handleGenerateClick = async () => {
     const response = await generateCV(userText.value);
     cvContent.value = response;
     isDownloadButtonVisible.value = true;
+    
+    // Scroll to the preview section automatically
+    setTimeout(() => {
+      const previewElement = document.querySelector('.preview-component');
+      if (previewElement) {
+        previewElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 500);
   } catch (err) {
     error.value = 'Error generating CV. Please try again.';
     console.error('Error:', err);
