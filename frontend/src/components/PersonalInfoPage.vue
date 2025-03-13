@@ -10,10 +10,11 @@
         type="text"
         v-model="localFormData.fullName"
         placeholder="Your full name"
-        class="form-input essential-input"
+        :class="['form-input essential-input', { 'input-error': errors.fullName }]"
         @input="updateFormData"
         required
       />
+      <FormErrorMessage :message="errors.fullName" />
     </div>
 
     <div class="form-group">
@@ -23,10 +24,11 @@
         type="email"
         v-model="localFormData.email"
         placeholder="your-email@example.com"
-        class="form-input essential-input"
+        :class="['form-input essential-input', { 'input-error': errors.email }]"
         @input="updateFormData"
         required
       />
+      <FormErrorMessage :message="errors.email" />
     </div>
 
     <div class="form-group">
@@ -36,10 +38,11 @@
         type="tel"
         v-model="localFormData.phone"
         placeholder="Your phone number"
-        class="form-input essential-input"
+        :class="['form-input essential-input', { 'input-error': errors.phone }]"
         @input="updateFormData"
         required
       />
+      <FormErrorMessage :message="errors.phone" />
     </div>
 
     <div class="form-group">
@@ -61,10 +64,11 @@
         type="text"
         v-model="localFormData.headline"
         placeholder="e.g., Senior Software Engineer"
-        class="form-input essential-input"
+        :class="['form-input essential-input', { 'input-error': errors.headline }]"
         @input="updateFormData"
         required
       />
+      <FormErrorMessage :message="errors.headline" />
     </div>
 
     <div class="form-actions">
@@ -80,6 +84,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import FormErrorMessage from './FormErrorMessage.vue';
 
 const props = defineProps({
   formData: {
@@ -96,6 +101,14 @@ const localFormData = ref({
   email: '',
   phone: '',
   location: '',
+  headline: ''
+});
+
+// Error state to track validation errors
+const errors = ref({
+  fullName: '',
+  email: '',
+  phone: '',
   headline: ''
 });
 
@@ -122,6 +135,48 @@ watch(() => props.formData, (newValue) => {
   };
 }, { deep: true });
 
+// Validate form data
+const validateForm = () => {
+  // Reset errors
+  errors.value = {
+    fullName: '',
+    email: '',
+    phone: '',
+    headline: ''
+  };
+  
+  let isValid = true;
+  
+  // Validate fullName
+  if (!localFormData.value.fullName || localFormData.value.fullName.trim() === '') {
+    errors.value.fullName = 'Full name is required';
+    isValid = false;
+  }
+  
+  // Validate email
+  if (!localFormData.value.email || localFormData.value.email.trim() === '') {
+    errors.value.email = 'Email address is required';
+    isValid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(localFormData.value.email)) {
+    errors.value.email = 'Please enter a valid email address';
+    isValid = false;
+  }
+  
+  // Validate phone
+  if (!localFormData.value.phone || localFormData.value.phone.trim() === '') {
+    errors.value.phone = 'Phone number is required';
+    isValid = false;
+  }
+  
+  // Validate headline (professional title)
+  if (!localFormData.value.headline || localFormData.value.headline.trim() === '') {
+    errors.value.headline = 'Professional headline is required';
+    isValid = false;
+  }
+  
+  return isValid;
+};
+
 // Emit form data updates to parent
 const updateFormData = () => {
   emit('update-form-data', {
@@ -135,8 +190,18 @@ const goToNextPage = () => {
   // First, ensure form data is updated
   updateFormData();
   
-  // Then emit next-page event
-  emit('next-page');
+  // Validate form before proceeding
+  if (validateForm()) {
+    // Then emit next-page event if validation succeeds
+    emit('next-page');
+  } else {
+    // Scroll to the first error for better UX
+    const firstErrorElement = document.querySelector('.input-error');
+    if (firstErrorElement) {
+      firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      firstErrorElement.focus();
+    }
+  }
 };
 </script>
 
@@ -198,6 +263,16 @@ label {
   border-left: 3px solid #3498DB; /* Blue left border for emphasis */
 }
 
+.input-error {
+  border-color: #e53e3e;
+  background-color: rgba(254, 215, 215, 0.1);
+  border-left: 3px solid #e53e3e;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -208,20 +283,15 @@ label {
   background-color: #3498DB;
   color: white;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
   border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .btn-primary:hover {
   background-color: #2980b9;
-}
-
-.btn-primary:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.4);
 }
 
 @media (max-width: 640px) {

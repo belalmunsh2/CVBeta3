@@ -3,6 +3,14 @@
     <h2 class="section-title">Work Experience</h2>
     <p class="section-description">Add your relevant work experience. You can add multiple entries and arrange them in order of importance.</p>
 
+    <div v-if="formErrors.length > 0" class="error-summary">
+      <FormErrorMessage 
+        v-for="(error, index) in formErrors" 
+        :key="index" 
+        :message="error" 
+      />
+    </div>
+
     <div class="blocks-container">
       <WorkExperienceBlock 
         v-for="(experience, index) in workExperiences" 
@@ -45,6 +53,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import WorkExperienceBlock from './WorkExperienceBlock.vue';
+import FormErrorMessage from './FormErrorMessage.vue';
 
 const props = defineProps({
   formData: {
@@ -53,17 +62,20 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update-form-data', 'next-page', 'prev-page']);
+const emit = defineEmits(['update-form-data', 'prev-page', 'next-page']);
 
-// Local array to store work experiences
+// Local state for work experiences
 const workExperiences = ref([]);
 
-// Initialize with data from props or create a default empty experience
+// Track form-level errors
+const formErrors = ref([]);
+
+// Initialize work experiences
 onMounted(() => {
   if (props.formData.workExperiences && props.formData.workExperiences.length > 0) {
     workExperiences.value = [...props.formData.workExperiences];
   } else {
-    // Add one empty experience block by default
+    // Initialize with a single empty experience if none exist
     workExperiences.value = [
       {
         jobTitle: '',
@@ -120,11 +132,80 @@ const updateFormData = () => {
   });
 };
 
+// Validate form data before proceeding
+const validateForm = () => {
+  // Clear previous errors
+  formErrors.value = [];
+
+  // Check if there are any work experiences
+  if (workExperiences.value.length === 0) {
+    formErrors.value.push('At least one work experience is required');
+    return false;
+  }
+
+  // Validate each work experience entry
+  let isValid = true;
+  let hasAtLeastOneValid = false;
+
+  workExperiences.value.forEach((exp, index) => {
+    // Check for required fields
+    if (!exp.jobTitle || exp.jobTitle.trim() === '') {
+      formErrors.value.push(`Experience #${index + 1}: Job title is required`);
+      isValid = false;
+    }
+
+    if (!exp.companyName || exp.companyName.trim() === '') {
+      formErrors.value.push(`Experience #${index + 1}: Company name is required`);
+      isValid = false;
+    }
+
+    if (!exp.startDate || exp.startDate.trim() === '') {
+      formErrors.value.push(`Experience #${index + 1}: Start date is required`);
+      isValid = false;
+    }
+
+    if (!exp.currentPosition && (!exp.endDate || exp.endDate.trim() === '')) {
+      formErrors.value.push(`Experience #${index + 1}: End date is required when not a current position`);
+      isValid = false;
+    }
+
+    if (!exp.responsibilities || exp.responsibilities.trim() === '') {
+      formErrors.value.push(`Experience #${index + 1}: Responsibilities are required`);
+      isValid = false;
+    }
+
+    // Check if this experience is valid
+    if (exp.jobTitle && exp.companyName && exp.startDate && 
+        (exp.currentPosition || exp.endDate) && exp.responsibilities) {
+      hasAtLeastOneValid = true;
+    }
+  });
+
+  // If no valid experiences were found
+  if (!hasAtLeastOneValid && workExperiences.value.length > 0) {
+    formErrors.value.push('Please complete at least one work experience with all required fields');
+    return false;
+  }
+
+  return isValid;
+};
+
 // Go to the next page
 const goToNextPage = () => {
-  // Ensure form data is updated before navigating
+  // Ensure form data is updated before validation
   updateFormData();
-  emit('next-page');
+  
+  // Validate form before proceeding
+  if (validateForm()) {
+    // Proceed to next page if validation passes
+    emit('next-page');
+  } else {
+    // Scroll to error summary for better UX
+    const errorSummary = document.querySelector('.error-summary');
+    if (errorSummary) {
+      errorSummary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 };
 </script>
 
@@ -156,57 +237,64 @@ const goToNextPage = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #edf2f7;
-  border: 1px dashed #a0aec0;
+  background-color: #EBF5FB;
   color: #3498DB;
-  font-weight: 500;
+  border: 1px dashed #3498DB;
   border-radius: 0.375rem;
+  padding: 0.625rem 1rem;
   margin-bottom: 2rem;
-  transition: all 0.2s ease;
+  width: 100%;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-add:hover {
-  background-color: #e2e8f0;
-  border-color: #3498DB;
+  background-color: #D6EAF8;
 }
 
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.btn-primary {
-  background-color: #3498DB;
-  color: white;
-  font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: #2980b9;
+  align-items: center;
+  margin-top: 1.5rem;
 }
 
 .btn-secondary {
-  background-color: white;
+  background-color: #EBF5FB;
   color: #3498DB;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
   border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid #3498DB;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: #f7fafc;
+  background-color: #D6EAF8;
+}
+
+.btn-primary {
+  background-color: #3498DB;
+  color: white;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.error-summary {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 @media (max-width: 640px) {
@@ -219,7 +307,8 @@ const goToNextPage = () => {
     gap: 0.75rem;
   }
   
-  .btn-primary, .btn-secondary {
+  .btn-secondary,
+  .btn-primary {
     width: 100%;
   }
 }

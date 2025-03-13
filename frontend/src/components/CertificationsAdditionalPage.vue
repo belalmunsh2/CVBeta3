@@ -3,6 +3,14 @@
     <h2 class="section-title">Certifications & Additional Details</h2>
     <p class="section-description">Add certifications, projects, and additional information to enhance your CV.</p>
 
+    <div v-if="formErrors.length > 0" class="error-summary">
+      <FormErrorMessage 
+        v-for="(error, index) in formErrors" 
+        :key="index" 
+        :message="error" 
+      />
+    </div>
+
     <!-- Certifications Section -->
     <div class="section-container">
       <h3 class="subsection-title">Certifications & Licenses</h3>
@@ -151,6 +159,7 @@
           class="form-input"
           @input="updateFormData"
         />
+        <p class="hint-text">If provided, should be a valid LinkedIn profile URL</p>
       </div>
     </div>
     
@@ -174,6 +183,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import SelectDateBox from './SelectDateBox.vue';
+import FormErrorMessage from './FormErrorMessage.vue';
 
 const props = defineProps({
   formData: {
@@ -193,6 +203,9 @@ const localFormData = ref({
 const certifications = ref([]);
 const projects = ref([]);
 
+// Form errors
+const formErrors = ref([]);
+
 // Initialize local data from props
 onMounted(() => {
   localFormData.value = {
@@ -203,16 +216,14 @@ onMounted(() => {
   if (props.formData.certifications && Array.isArray(props.formData.certifications)) {
     certifications.value = [...props.formData.certifications];
   } else {
-    // Add one empty certification by default
-    addCertification();
+    certifications.value = [];
   }
   
   // Initialize projects
   if (props.formData.projects && Array.isArray(props.formData.projects)) {
     projects.value = [...props.formData.projects];
   } else {
-    // Add one empty project by default
-    addProject();
+    projects.value = [];
   }
 });
 
@@ -278,10 +289,101 @@ const updateFormData = () => {
   });
 };
 
+// Validate the form data
+const validateForm = () => {
+  // Reset errors
+  formErrors.value = [];
+  
+  let isValid = true;
+  
+  // Validate LinkedIn URL format if provided
+  if (localFormData.value.linkedin && localFormData.value.linkedin.trim() !== '') {
+    const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[\w-]+\/?$/;
+    if (!linkedinRegex.test(localFormData.value.linkedin)) {
+      formErrors.value.push('Please enter a valid LinkedIn profile URL (e.g., https://linkedin.com/in/yourname)');
+      isValid = false;
+    }
+  }
+  
+  // Validate essential fields from previous pages
+  if (!props.formData.fullName || props.formData.fullName.trim() === '') {
+    formErrors.value.push('Please complete your personal information (Full Name is required)');
+    isValid = false;
+  }
+  
+  if (!props.formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(props.formData.email)) {
+    formErrors.value.push('Please complete your personal information with a valid email address');
+    isValid = false;
+  }
+  
+  if (!props.formData.phone || props.formData.phone.trim() === '') {
+    formErrors.value.push('Please complete your personal information (Phone number is required)');
+    isValid = false;
+  }
+  
+  if (!props.formData.headline || props.formData.headline.trim() === '') {
+    formErrors.value.push('Please complete your personal information (Professional headline is required)');
+    isValid = false;
+  }
+  
+  // Validate work experiences
+  if (!props.formData.workExperiences || !props.formData.workExperiences.length) {
+    formErrors.value.push('At least one work experience entry is required');
+    isValid = false;
+  } else {
+    const validExperience = props.formData.workExperiences.some(exp => 
+      exp.jobTitle && exp.jobTitle.trim() !== '' && 
+      exp.companyName && exp.companyName.trim() !== '' &&
+      exp.startDate && exp.startDate.trim() !== ''
+    );
+    
+    if (!validExperience) {
+      formErrors.value.push('Please complete at least one work experience entry with all required fields');
+      isValid = false;
+    }
+  }
+  
+  // Validate education
+  if (!props.formData.educations || !props.formData.educations.length) {
+    formErrors.value.push('At least one education entry is required');
+    isValid = false;
+  } else {
+    const validEducation = props.formData.educations.some(edu => 
+      edu.degreeEarned && edu.degreeEarned.trim() !== '' && 
+      edu.institutionName && edu.institutionName.trim() !== '' &&
+      edu.graduationDate && edu.graduationDate.trim() !== ''
+    );
+    
+    if (!validEducation) {
+      formErrors.value.push('Please complete at least one education entry with all required fields');
+      isValid = false;
+    }
+  }
+  
+  // Validate skills
+  if (!props.formData.skills || !props.formData.skills.length) {
+    formErrors.value.push('At least one skill is required');
+    isValid = false;
+  }
+  
+  return isValid;
+};
+
 // Submit the form
 const submitForm = () => {
+  // Ensure form data is updated
   updateFormData();
-  emit('submit-form');
+  
+  // Validate before submitting
+  if (validateForm()) {
+    emit('submit-form');
+  } else {
+    // Scroll to error summary for better UX
+    const errorSummary = document.querySelector('.error-summary');
+    if (errorSummary) {
+      errorSummary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 };
 </script>
 
@@ -307,69 +409,61 @@ const submitForm = () => {
 
 .section-container {
   margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.section-container:last-of-type {
-  border-bottom: none;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  border-radius: 0.5rem;
 }
 
 .subsection-title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 500;
   color: #2d3748;
   margin-bottom: 1rem;
 }
 
-.block-subtitle {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #4a5568;
-}
-
 .certification-container,
 .project-container {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 1.25rem;
+  padding: 1rem;
   margin-bottom: 1rem;
-  transition: all 0.2s ease-in-out;
-}
-
-.certification-container:hover,
-.project-container:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-color: #cbd5e0;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  background-color: white;
 }
 
 .block-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.block-subtitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #4a5568;
+  margin: 0;
 }
 
 .btn-remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: none;
+  border: none;
+  color: #718096;
+  cursor: pointer;
   padding: 0.25rem;
-  border-radius: 0.375rem;
-  background-color: transparent;
-  color: #e53e3e;
-  border: 1px solid #e53e3e;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .btn-remove:hover {
-  background-color: #e53e3e;
-  color: white;
+  color: #e53e3e;
+}
+
+.btn-remove svg {
+  width: 1rem;
+  height: 1rem;
 }
 
 .form-group {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 label {
@@ -401,63 +495,77 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #edf2f7;
-  border: 1px dashed #a0aec0;
+  background-color: #EBF5FB;
   color: #3498DB;
-  font-weight: 500;
+  border: 1px dashed #3498DB;
   border-radius: 0.375rem;
-  margin-top: 0.5rem;
-  transition: all 0.2s ease;
+  padding: 0.625rem 1rem;
+  width: 100%;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-add:hover {
-  background-color: #e2e8f0;
-  border-color: #3498DB;
+  background-color: #D6EAF8;
 }
 
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 2rem;
 }
 
 .btn-secondary {
-  background-color: white;
+  background-color: #EBF5FB;
   color: #3498DB;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
   border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid #3498DB;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: #f7fafc;
+  background-color: #D6EAF8;
 }
 
 .btn-submit {
-  background-color: #38a169;
+  background-color: #48bb78;
   color: white;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
   border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
+  transition: background-color 0.2s ease;
 }
 
 .btn-submit:hover {
-  background-color: #2f855a;
+  background-color: #38a169;
+}
+
+.error-summary {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.hint-text {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 0.375rem;
 }
 
 @media (max-width: 640px) {
   .certifications-additional-page {
+    padding: 1rem;
+  }
+  
+  .section-container {
     padding: 1rem;
   }
   
@@ -466,7 +574,8 @@ label {
     gap: 0.75rem;
   }
   
-  .btn-secondary, .btn-submit {
+  .btn-secondary,
+  .btn-submit {
     width: 100%;
   }
 }

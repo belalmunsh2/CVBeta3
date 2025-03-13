@@ -3,11 +3,19 @@
     <h2 class="section-title">Skills & Professional Summary</h2>
     <p class="section-description">Add your skills and write a professional summary to highlight your expertise.</p>
 
+    <div v-if="formErrors.length > 0" class="error-summary">
+      <FormErrorMessage 
+        v-for="(error, index) in formErrors" 
+        :key="index" 
+        :message="error" 
+      />
+    </div>
+
     <div class="form-group">
       <div class="label-container">
-        <label for="skills">Skills</label>
+        <label for="skills" class="essential-field">Skills</label>
       </div>
-      <div class="skills-input-container">
+      <div class="skills-input-container" :class="{ 'error-container': hasSkillError }">
         <input 
           type="text" 
           id="skill-input"
@@ -16,7 +24,7 @@
           @keydown.tab.prevent="addSkill"
           @keydown.comma.prevent="addSkill"
           placeholder="Type a skill and press Enter, Tab, or comma to add"
-          class="form-input"
+          :class="['form-input', { 'input-error': hasSkillError }]"
         />
         <div class="skills-tags">
           <div 
@@ -78,6 +86,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import FormErrorMessage from './FormErrorMessage.vue';
 
 const props = defineProps({
   formData: {
@@ -86,7 +95,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update-form-data', 'next-page', 'prev-page']);
+const emit = defineEmits(['update-form-data', 'prev-page', 'next-page']);
 
 // Local form data
 const localFormData = ref({
@@ -96,6 +105,8 @@ const localFormData = ref({
 // Skills handling
 const localSkills = ref([]);
 const newSkill = ref('');
+const formErrors = ref([]);
+const hasSkillError = ref(false);
 
 // Initialize local data from props
 onMounted(() => {
@@ -129,6 +140,8 @@ const addSkill = () => {
   if (skill && !localSkills.value.includes(skill)) {
     localSkills.value.push(skill);
     newSkill.value = '';
+    // Reset error state when skills are added
+    hasSkillError.value = false;
     updateFormData();
   }
 };
@@ -148,10 +161,41 @@ const updateFormData = () => {
   });
 };
 
+// Validate the form
+const validateForm = () => {
+  // Reset previous errors
+  formErrors.value = [];
+  hasSkillError.value = false;
+  
+  // Validate skills (at least one is required)
+  if (!localSkills.value.length) {
+    formErrors.value.push('Please add at least one skill');
+    hasSkillError.value = true;
+    return false;
+  }
+  
+  return true;
+};
+
 // Navigate to next page
 const goToNextPage = () => {
+  // Update form data first
   updateFormData();
-  emit('next-page');
+  
+  // Validate the form
+  if (validateForm()) {
+    // If valid, proceed to next page
+    emit('next-page');
+  } else {
+    // Scroll to error summary for better UX
+    const errorSummary = document.querySelector('.error-summary');
+    if (errorSummary) {
+      errorSummary.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (hasSkillError.value) {
+      // If no error summary but has skill error, focus on skill input
+      document.getElementById('skill-input').focus();
+    }
+  }
 };
 </script>
 
@@ -192,11 +236,22 @@ label {
   font-size: 0.95rem;
 }
 
+.essential-field::after {
+  content: "*";
+  color: #e53e3e;
+  margin-left: 0.25rem;
+}
+
 .lightbulb-icon {
   width: 1rem;
   height: 1rem;
   margin-left: 0.25rem;
   color: #f6ad55;
+}
+
+.recommended-field {
+  display: flex;
+  align-items: center;
 }
 
 .form-input,
@@ -216,15 +271,26 @@ label {
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
 }
 
-.recommended-field::after {
-  content: " (Recommended)";
-  color: #3498DB;
-  font-size: 0.85rem;
-  font-weight: normal;
+.recommended-input {
+  background-color: rgba(154, 230, 180, 0.1);
+  border-left: 3px solid #48bb78;
 }
 
-.recommended-input {
-  border-left: 3px solid #3498DB;
+.input-error {
+  border-color: #e53e3e;
+  background-color: rgba(254, 215, 215, 0.1);
+  border-left: 3px solid #e53e3e;
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+}
+
+.error-container {
+  border: 1px solid #e53e3e;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  background-color: rgba(254, 215, 215, 0.05);
 }
 
 .skills-input-container {
@@ -239,29 +305,24 @@ label {
 }
 
 .skill-tag {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  background-color: #EBF5FB;
+  color: #2980b9;
   padding: 0.25rem 0.5rem;
-  background-color: #edf2f7;
-  color: #2d3748;
-  border-radius: 0.25rem;
+  border-radius: 1rem;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.skill-tag:hover {
-  background-color: #e2e8f0;
 }
 
 .tag-remove-btn {
   background: none;
   border: none;
-  cursor: pointer;
+  color: #2980b9;
   margin-left: 0.25rem;
-  font-size: 1.25rem;
-  line-height: 0.75rem;
-  color: #718096;
-  padding: 0.125rem 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
 }
 
 .tag-remove-btn:hover {
@@ -269,46 +330,54 @@ label {
 }
 
 .hint-text {
-  margin-top: 0.5rem;
   font-size: 0.8rem;
   color: #718096;
-  font-style: italic;
+  margin-top: 0.375rem;
 }
 
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 2rem;
 }
 
-.btn-primary {
-  background-color: #3498DB;
-  color: white;
-  font-weight: 500;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: #2980b9;
-}
-
 .btn-secondary {
-  background-color: white;
+  background-color: #EBF5FB;
   color: #3498DB;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
   border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid #3498DB;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: #f7fafc;
+  background-color: #D6EAF8;
+}
+
+.btn-primary {
+  background-color: #3498DB;
+  color: white;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.error-summary {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 @media (max-width: 640px) {
@@ -321,7 +390,8 @@ label {
     gap: 0.75rem;
   }
   
-  .btn-primary, .btn-secondary {
+  .btn-secondary,
+  .btn-primary {
     width: 100%;
   }
 }
