@@ -4,7 +4,18 @@
       <h1 class="text-2xl sm:text-3xl font-bold text-primary-600 text-center mb-8">CV Creator Service</h1>
       
       <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 mb-8 transition-shadow duration-300 hover:shadow-md">
+        <!-- CV Form Component -->
         <CVForm v-if="showForm" @cv-submit="handleFormSubmit" :is-generating="isGeneratingCV" />
+        
+        <!-- Show when form is hidden -->
+        <div v-else class="text-center py-4">
+          <button 
+            @click="showForm = true" 
+            class="text-primary-600 hover:text-primary-700 font-medium text-sm underline focus:outline-none"
+          >
+            Edit Information
+          </button>
+        </div>
       </div>
 
       <div 
