@@ -6,7 +6,7 @@ class CVTextInput(BaseModel):
 
 class PromoCodeRequest(BaseModel):
     promo_code: str
-    amount: int  # Amount  in smallest currency unit
+    amount: int  # Am ount  in smallest currency unit
 
 class PromoCodeResponse(BaseModel):
     discounted_amount: Optional[int] = None
