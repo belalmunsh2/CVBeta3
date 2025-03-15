@@ -2,8 +2,10 @@
 FROM python:3.11-slim
 
 # Set environment variables to improve Python performance in containers
-ENV PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
-ENV PYTHONUNBUFFERED=1         # Ensures Python output is sent straight to terminal
+# Prevents Python from writing .pyc files
+ENV PYTHONDONTWRITEBYTECODE=1
+# Ensures Python output is sent straight to terminal
+ENV PYTHONUNBUFFERED=1
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -20,10 +22,10 @@ RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 COPY . .
 
 # Expose the port that will be used by the application
-# Railway will set the $PORT environment variable dynamically
-EXPOSE ${PORT:-8000}
+# Railway will set the $PORT environment variable dynamically at runtime
+EXPOSE 8000
 
 # Start the FastAPI application using uvicorn
 # The CMD instruction is used as it allows for command line overrides
-# We use shell form to ensure environment variable substitution works correctly
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# We use exec form for better signal handling and process management
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
