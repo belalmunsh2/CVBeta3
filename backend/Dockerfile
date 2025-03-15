@@ -22,5 +22,5 @@ COPY . .
 # Expose port 8000 (Railway will map $PORT to this container port)
 EXPOSE 8000
 
-# Start the FastAPI application using uvicorn, using sh to enable env var substitution
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start the FastAPI application using uvicorn, using /bin/sh for env var substitution
+CMD ["/bin/sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
