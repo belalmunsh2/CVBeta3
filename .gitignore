@@ -9,7 +9,7 @@ __pycache__/
 *.pyd
 
 # Environment files (uncomment .env if you want to track it)
-.env
+#.env
 .venv
 env/
 venv/
