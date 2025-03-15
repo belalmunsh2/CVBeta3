@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = ["nodejs-18_x", "nodePackages.pnpm"]
+cmds = ["pnpm install"]
+
+[phases.build]
+cmds = ["pnpm build"]
+
+[start]
+cmd = "npx serve -s dist -l $PORT"
