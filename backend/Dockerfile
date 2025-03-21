@@ -1,7 +1,7 @@
 # Use Python 3.11-slim as the base image for a smaller footprint
 FROM python:3.11-slim
 
-# Install system dependencies for WeasyPrint and related libraries
+# Install system  dependencies for WeasyPrint and related libraries
 RUN apt-get update && apt-get install -y \
     libcairo2 \
     libpango-1.0-0 \
