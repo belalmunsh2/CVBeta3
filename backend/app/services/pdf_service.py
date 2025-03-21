@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def clean_ai_output(output: str) -> str:
     """
-    Cleans the AI output by removing potential code block markers or extra text.
+    Cleans the AI output   by removing potential code block markers or extra text.
     
     Args:
         output (str): The raw AI-generated string.
