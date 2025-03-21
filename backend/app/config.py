@@ -30,6 +30,6 @@ if not PAYMOB_INTEGRATION_ID:
     raise ValueError("PAYMOB_INTEGRATION_ID environment variable not set!")
 logger.info(f"Config Value - PAYMOB_INTEGRATION_ID: {PAYMOB_INTEGRATION_ID}")
 
-# Public Base URL for external access (used for PDF download links)
-PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://cuddly-engine-pjwvppv46rqgf7q7j-8000.app.github.dev/")
+# Set the public base URL for the application
+PUBLIC_BASE_URL = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN')}" if os.getenv('RAILWAY_PUBLIC_DOMAIN') else "https://cuddly-engine-pjwvppv46rqgf7q7j-8000.app.github.dev/"
 logger.info(f"Config Value - PUBLIC_BASE_URL: {PUBLIC_BASE_URL}")

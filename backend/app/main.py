@@ -1,6 +1,7 @@
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 from app.routes.generator import router as generator_router
 from app.routes.promo import router as promo_router
 from app.routes.payment import router as payment_router
@@ -14,12 +15,14 @@ logger.debug("DEBUG log message from main.py - DEFINITIVE LOGGING TEST - IS DEBU
 app = FastAPI()
 
 # Configure CORS - VERY IMPORTANT 
-origins = [
-    "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev",  # Frontend origin
-    "https://cuddly-engine-pjwvppv46rqgf7q7j-8000.app.github.dev",  # Backend origin
-    "http://localhost:5173",  # Local frontend
-    "http://localhost:8000",  # Local backend
-]
+origins = ["http://localhost:5173", "http://localhost:8000"]  # Default for local, will be overridden
+
+# Use ALLOWED_ORIGINS from environment if available
+if os.getenv("ALLOWED_ORIGINS"):
+    origins = os.getenv("ALLOWED_ORIGINS").split(",")
+    logger.info(f"Using ALLOWED_ORIGINS from environment: {origins}")
+else:
+    logger.warning("ALLOWED_ORIGINS environment variable not set, using default origins")
 
 app.add_middleware(
     CORSMiddleware,
