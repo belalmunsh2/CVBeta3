@@ -14,7 +14,7 @@ logger.debug("DEBUG log message from main.py - DEFINITIVE LOGGING TEST - IS DEBU
 
 app = FastAPI()
 
-# Configure CORS dynamically using environment variables
+# Configure CORS dynami cally using environment variables
 # Initialize an empty list for origins
 origins = []
 
