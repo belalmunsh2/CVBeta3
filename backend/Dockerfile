@@ -1,14 +1,16 @@
 # Use Python 3.11-slim as the base image for a smaller footprint
 FROM python:3.11-slim
 
-# Install system  dependencies for WeasyPrint and related libraries
+# Install system dependencies for WeasyPrint and related libraries
 RUN apt-get update && apt-get install -y \
     libcairo2 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
     libgdk-pixbuf2.0-0 \
     libglib2.0-0 \
+    gir1.2-glib-2.0 \
     libffi-dev \
+    poppler-utils \
     shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
@@ -27,7 +29,7 @@ COPY requirements.txt .
 # Install Python dependencies using the --break-system-packages flag
 RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the rest o f the application code
 COPY . .
 
 # Expose port 8000 (Railway will map $PORT to this container port)

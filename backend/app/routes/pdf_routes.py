@@ -9,7 +9,7 @@ import os
 from app.models.schemas import CVTextInput
 from ..services.gemini_ai_service import generate_cv_content_gemini
 from ..services.pdf_service import convert_html_to_pdf, generate_cv_html
-from ..config import PUBLIC_BASE_URL
+from ..config import PUBLIC_BASE_URL, FRONTEND_URL
 import io
 import hashlib
 from pdf2image import convert_from_bytes
@@ -26,7 +26,7 @@ router = APIRouter()
 temporary_download_urls: Dict[str, Dict[str, Any]] = {}
 
 # Frontend base URL - Replace with your actual frontend URL
-FRONTEND_BASE_URL = "https://cuddly-engine-pjwvppv46rqgf7q7j-5173.app.github.dev"
+FRONTEND_BASE_URL = FRONTEND_URL
 
 @router.post("/api/preview")
 async def generate_preview(request: Request):
@@ -125,7 +125,7 @@ async def get_download_url_route(cv_text_input: CVTextInput, request: Request) -
     download_token = str(uuid.uuid4())
     
     # Construct a frontend URL for the download page
-    temporary_url = f"{FRONTEND_BASE_URL.rstrip('/')}/download/{download_token}"
+    temporary_url = f"{FRONTEND_URL.rstrip('/')}/download/{download_token}"
     
     logging.info(f"Generated temporary download URL: {temporary_url}")
 
@@ -150,7 +150,7 @@ async def paymob_callback_intermediate_route(request: Request):
     
     if not order_id_str:
         logging.error("Order ID missing in Paymob callback query parameters.")
-        error_redirect_url = f"{FRONTEND_BASE_URL.rstrip('/')}/service?error=missing_order_id"  # Redirect with error
+        error_redirect_url = f"{FRONTEND_URL.rstrip('/')}/service?error=missing_order_id"  # Redirect with error
         return RedirectResponse(url=error_redirect_url, status_code=302)
     
     # Retrieve download data from temporary_download_urls using order_id as key
@@ -158,7 +158,7 @@ async def paymob_callback_intermediate_route(request: Request):
     
     if not download_data:
         logging.error(f"No download data found for order_id: {order_id_str} in temporary_download_urls.")
-        error_redirect_url = f"{FRONTEND_BASE_URL.rstrip('/')}/service?error=missing_token"  # Redirect with error
+        error_redirect_url = f"{FRONTEND_URL.rstrip('/')}/service?error=missing_token"  # Redirect with error
         return RedirectResponse(url=error_redirect_url, status_code=302)
     
     # Extract download_token from the download_data
@@ -166,11 +166,11 @@ async def paymob_callback_intermediate_route(request: Request):
     
     if not download_token:
         logging.error(f"No download_token found in download_data for order_id: {order_id_str}")
-        error_redirect_url = f"{FRONTEND_BASE_URL.rstrip('/')}/service?error=missing_token"  # Redirect with error
+        error_redirect_url = f"{FRONTEND_URL.rstrip('/')}/service?error=missing_token"  # Redirect with error
         return RedirectResponse(url=error_redirect_url, status_code=302)
     
     # Construct frontend download URL
-    frontend_download_url = f"{FRONTEND_BASE_URL.rstrip('/')}/download/{download_token}"
+    frontend_download_url = f"{FRONTEND_URL.rstrip('/')}/download/{download_token}"
     
     logging.info(f"Successfully retrieved download_token for order_id: {order_id_str}. Redirecting to frontend download URL: {frontend_download_url}")
     
